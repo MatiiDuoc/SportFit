@@ -20,7 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+<<<<<<< HEAD
 SECRET_KEY = 'django-insecure-l0216+1+mvx4ls9#ww_y*_rf0+#q-5l4bd1^466+p(e#qnin09'
+=======
+SECRET_KEY = 'django-insecure-5j)j#gmw5=+svi=@9^+1e8cq!b4_gfdj0&7x!!gw%0-9x4gezu'
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+<<<<<<< HEAD
     'SportFit_app',
     'tailwind',
     'theme',
@@ -47,6 +52,11 @@ TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
+=======
+    'tailwind',
+]
+
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,7 +65,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+<<<<<<< HEAD
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+=======
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
 ]
 
 ROOT_URLCONF = 'SportFit.urls'
@@ -63,7 +76,11 @@ ROOT_URLCONF = 'SportFit.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+<<<<<<< HEAD
         'DIRS': [],
+=======
+        'DIRS': [BASE_DIR / 'SportFit_app' / 'templates'],
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,7 +142,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+<<<<<<< HEAD
 
+=======
+STATICFILES_DIRS = [BASE_DIR / 'SportFit_app' / 'static']
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

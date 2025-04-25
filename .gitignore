@@ -1,0 +1,27 @@
+# Archivos de entorno virtual
+venv/
+env/
+
+# Archivos de configuración de Python
+*.pyc
+*.pyo
+__pycache__/
+
+# Archivos de configuración de Django
+db.sqlite3
+*.log
+
+# Archivos estáticos generados
+SportFit_app/static/output.css
+
+# Archivos de Node.js
+node_modules/
+package-lock.json
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de IDEs
+.vscode/
+.idea/

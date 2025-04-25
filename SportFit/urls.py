@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+<<<<<<< HEAD
 from django.urls import path, include
 from SportFit_app import views  # Cambiado para importar desde SportFit_app
 
@@ -22,4 +23,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('__reload__/', include('django_browser_reload.urls')),
+=======
+from django.urls import path
+from SportFit_app import views
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.index, name='index'),
+>>>>>>> 31d95fc2e7ea9e9d39c625ef14f22b960baaeca6
 ]
