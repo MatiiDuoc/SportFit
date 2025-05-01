@@ -5,7 +5,11 @@ module.exports = {
         '../../**/templates/**/*.html', // Plantillas en otras aplicaciones
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                poppins: ['Poppins', 'sans-serif'],
+            },
+        },
     },
     plugins: [],
 };

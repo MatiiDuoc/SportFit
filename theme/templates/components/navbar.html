@@ -1,0 +1,20 @@
+<!-- filepath: c:\Users\matia\SportFit\theme\templates\components\navbar.html -->
+{% load static %}
+<nav class="bg-white text-black p-4 flex items-center justify-between font-poppins font-semibold">
+    <!-- Logo -->
+    <div class="flex items-center">
+        <a href="/">
+            <img src="{% static 'images/logo/SportFit@1x.png' %}" alt="Logo" class="h-8 mr-4">
+        </a>
+        <ul class="flex space-x-4">
+            <li><a href="/" class="hover:underline hover:font-bold hover:decoration-4 underline-offset-4 hover:decoration-gray-500 rounded-lg">Inicio</a></li>
+            <li><a href="/about" class="hover:underline hover:font-bold hover:decoration-4 underline-offset-4 hover:decoration-gray-500 rounded-lg">Acerca de</a></li>
+            <li><a href="/contact" class="hover:underline hover:font-bold hover:decoration-4 underline-offset-4 hover:decoration-gray-500 rounded-lg">Contacto</a></li>
+        </ul>
+    </div>
+    <!-- Login and Register -->
+    <div class="flex space-x-4">
+        <a href="/login" class="hover:underline hover:font-bold hover:decoration-4 underline-offset-4 hover:decoration-gray-500 rounded-lg">Iniciar sesión</a>
+        <a href="/register" class="hover:underline hover:font-bold hover:decoration-4 underline-offset-4 hover:decoration-gray-500 rounded-lg">Registrar</a>
+    </div>
+</nav>
