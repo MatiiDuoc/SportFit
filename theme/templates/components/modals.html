@@ -1,0 +1,81 @@
+<div id="{{ modal_id }}" class="fixed inset-0 backdrop-blur-sm hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-96 p-6 opacity-0 scale-95 transition duration-300 ease-in-out">
+        <!-- Título del modal -->
+        <h2 id="{{ modal_id }}-title" class="text-xl font-bold mb-4 text-gray-800">
+            {% block modal_title %}Título del Modal{% endblock %}
+        </h2>
+
+        <!-- Contenido del modal -->
+        <div id="{{ modal_id }}-body" class="mb-4">
+            {% block modal_body %}
+            <p>Contenido del modal.</p>
+            {% endblock %}
+        </div>
+
+        <!-- Botones del modal -->
+        <div id="{{ modal_id }}-buttons" class="flex justify-end space-x-2">
+            {% block modal_buttons %}
+            <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                onclick="hideModal('{{ modal_id }}')">
+                Cancelar
+            </button>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+<script>
+    function hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            console.error(`Modal with ID "${modalId}" not found.`);
+            return;
+        }
+
+        const content = modal.querySelector('.opacity-100');
+        if (content) {
+            content.classList.remove('opacity-100', 'scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+        }
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300); // Coincide con la duración de la transición
+    }
+    function showModal(modalId, title, body, actionButtonText, actionButtonClass = 'bg-green-500 hover:bg-green-600') {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            console.error(`Modal with ID "${modalId}" not found.`);
+            return;
+        }
+
+        // Actualizar el título del modal
+        const modalTitle = modal.querySelector(`#${modalId}-title`);
+        modalTitle.innerHTML = title;
+
+        // Actualizar el cuerpo del modal
+        const modalBody = modal.querySelector(`#${modalId}-body`);
+        modalBody.innerHTML = body;
+
+        // Actualizar los botones del modal
+        const modalButtons = modal.querySelector(`#${modalId}-buttons`);
+        modalButtons.innerHTML = `
+        <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+            onclick="hideModal('${modalId}')">
+            Cancelar
+        </button>
+        <button type="button" class="${actionButtonClass} text-white px-4 py-2 rounded transition">
+            ${actionButtonText}
+        </button>
+    `;
+
+        // Mostrar el modal
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            const content = modal.querySelector('.opacity-0');
+            if (content) {
+                content.classList.remove('opacity-0', 'scale-95');
+                content.classList.add('opacity-100', 'scale-100');
+            }
+        }, 10);
+    }
+</script>

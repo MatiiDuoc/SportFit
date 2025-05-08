@@ -1,0 +1,46 @@
+<div class="w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Resumen de Ventas del Mes</h1>
+    <div class="relative w-full h-[500px]">
+        <canvas id="ventasChart" class="w-full max-w-full h-96"></canvas>
+    </div>
+    <div class="mt-6 flex justify-between items-center flex-wrap gap-4">
+        <p class="text-sm text-gray-600">Datos actualizados al <span
+                class="font-semibold text-gray-800">01/01/2023</span></p>
+        <a href="/admin/ventas" class="text-blue-500 hover:underline text-sm font-semibold">Ver más detalles</a>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('ventasChart').getContext('2d');
+    const ventasChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+            datasets: [{
+                label: 'Ventas ($)',
+                data: [1200, 1900, 3000, 5000],
+                backgroundColor: ['#4fd1c5', '#4299e1', '#f6e05e', '#9f7aea'],
+                borderColor: ['#38b2ac', '#3182ce', '#ecc94b', '#805ad5'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Ventas Semanales'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>

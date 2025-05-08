@@ -6,152 +6,61 @@ Dashboard Administrador
 {% endblock %}
 
 {% block navbar %}
-<!-- La barra de navegación principal se incluye en el diseño base -->
+<!-- Incluir la sidebar del administrador -->
 {% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen w-full">
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="flex min-h-screen">
     <!-- Sidebar -->
-    <aside id="adminSidebar" class="w-64 bg-gray-900 text-white flex flex-col justify-between p-4 fixed left-0 top-0 z-10 min-h-screen">
-        <!-- Header del Sidebar -->
-        <div>
-            <div class="mb-6">
-                <a href="/" class="flex items-center space-x-2 hover:text-blue-400 transition">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    <span class="text-sm font-semibold">Volver</span>
-                </a>
-            </div>
-            <div class="flex flex-col items-center mb-6">
-                <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400">
-                    <img src="https://via.placeholder.com/150" alt="Foto de perfil" class="w-full h-full object-cover">
-                </div>
-                <p class="mt-4 text-center font-semibold">Bienvenido, <span class="text-blue-400 font-bold">Administrador</span></p>
-            </div>
-            <!-- Navegación -->
-            <nav class="text-sm">
-                <ul class="space-y-4">
-                    <li>
-                        <a href="/admin/resumen" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-arrow-trend-up"></i>
-                            <span>Resumen diario</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/usuarios" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-user"></i>
-                            <span>Usuarios</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/ventas" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-money-bill"></i>
-                            <span>Ventas</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/stock" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                            <span>Stock</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/ordenes" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-box"></i>
-                            <span>Órdenes</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/productos" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <span>Productos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/perfil" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                            <i class="fa-solid fa-circle-user"></i>
-                            <span>Mi perfil</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-        <!-- Footer del Sidebar -->
-        <div class="mt-6">
-            <p class="text-xs text-gray-400 text-center mb-4">Versión 0.0.1</p>
-            <button class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Cerrar sesión
-            </button>
-        </div>
-    </aside>
+    {% include "components/admin_navbar.html" %}
 
     <!-- Contenido principal -->
-    <div class="flex-grow p-6 flex justify-center items-center bg-gray-100">
-        <div class="w-full max-w-6xl bg-white shadow-lg rounded-lg p-6">
-            <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Resumen de Ventas del Mes</h1>
-            <div class="relative w-full h-[500px]">
-                <canvas id="ventasChart"></canvas>
+    <div id="mainContent" class="flex-grow p-6 bg-gray-100 transition-all duration-300 ease-in-out sm:ml-64">
+        <!-- Encabezado del dashboard -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Dashboard Administrador</h1>
+            <p class="text-sm text-gray-600">Bienvenido al panel de administración. Aquí puedes ver un resumen de las métricas clave.</p>
+        </div>
+
+        <!-- Tarjetas de resumen -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white shadow-lg rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-800">Ventas Totales</h2>
+                <p class="text-2xl font-bold text-blue-500">$12,345</p>
             </div>
-            <div class="mt-6 flex justify-between items-center">
-                <p class="text-sm text-gray-600">Datos actualizados al <span class="font-semibold text-gray-800">01/01/2023</span></p>
-                <a href="/admin/ventas" class="text-blue-500 hover:underline text-sm font-semibold">Ver más detalles</a>
+            <div class="bg-white shadow-lg rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-800">Usuarios Activos</h2>
+                <p class="text-2xl font-bold text-green-500">1,234</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-800">Órdenes Pendientes</h2>
+                <p class="text-2xl font-bold text-yellow-500">56</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-800">Productos en Stock</h2>
+                <p class="text-2xl font-bold text-red-500">789</p>
             </div>
         </div>
+
+        <!-- Gráfico -->
+        {% include "components/ventas_chart.html" %}
     </div>
 </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Configuración del gráfico
-    const ctx = document.getElementById('ventasChart').getContext('2d');
-    const ventasChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-            datasets: [{
-                label: 'Ventas ($)',
-                data: [1200, 1900, 3000, 5000],
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(153, 102, 255, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(153, 102, 255, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Ventas Semanales'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const adminSidebar = document.getElementById('adminSidebar');
+    const mainContent = document.getElementById('mainContent');
+
+    toggleSidebar.addEventListener('click', () => {
+        adminSidebar.classList.toggle('-translate-x-full');
     });
 </script>
-
-<style>
-    #ventasChart {
-        max-height: 400px;
-    }
-</style>
 {% endblock %}
 
 {% block footer %}

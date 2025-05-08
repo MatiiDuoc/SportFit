@@ -1,79 +1,96 @@
-{% load static %}
-
-<!-- Botón para mostrar la barra lateral en pantallas pequeñas -->
-<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
-    <i class="fa-solid fa-bars"></i>
-</button>
-
 <aside id="adminSidebar"
-    class="fixed sm:relative -translate-x-full sm:translate-x-0 w-64 bg-gray-900 text-white h-screen flex flex-col justify-between p-4 font-poppins shadow-lg transition-transform transform">
-    <!-- Header -->
-    <div class="mb-6">
-        <a href="/" class="flex items-center space-x-2 hover:text-blue-400 transition">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span class="text-sm font-semibold">Volver</span>
-        </a>
-    </div>
-
-    <!-- Perfil del Administrador -->
-    <div class="flex flex-col items-center mb-6">
-        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400">
-            <img src="{% static 'images/logo/SportFit@1x.png' %}" alt="Foto de perfil"
-                class="w-full h-full object-cover">
+    class="fixed top-0 left-0 w-64 bg-gray-900 text-white flex flex-col justify-between p-4 z-40 min-h-screen transition-transform duration-300 ease-in-out -translate-x-full sm:translate-x-0">
+    <!-- Sidebar Header -->
+    <div>
+        <div class="mb-6">
+            <a href="/" class="flex items-center space-x-2 hover:text-blue-400 transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="text-sm font-semibold">Volver</span>
+            </a>
         </div>
-        <p class="mt-4 text-center font-semibold">Bienvenido, <span class="text-blue-400 font-bold">Administrador</span>
-        </p>
+        <div class="flex flex-col items-center mb-6">
+            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400">
+                <img src="https://via.placeholder.com/150" alt="Foto de perfil" class="w-full h-full object-cover">
+            </div>
+            <p class="mt-4 text-center font-semibold">Bienvenido, <span
+                    class="text-blue-400 font-bold">Administrador</span></p>
+        </div>
+        <!-- Navegación -->
+        <nav class="text-sm">
+            <ul class="space-y-4">
+                <li>
+                    <a href="/admin/resumen"
+                        class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span>Resumen diario</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/usuarios" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/ventas" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-money-bill"></i>
+                        <span>Ventas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/stock" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>Stock</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/ordenes" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-box"></i>
+                        <span>Órdenes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/productos" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Productos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/categorias" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>Categorías</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/marcas" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-trademark"></i>
+                        <span>Marcas asociadas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/proveedores" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/perfil"
+                        class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span>Mi perfil</span>
+                    </a>
+                </li>
+            </ul>
+            </ul>
+        </nav>
     </div>
-
-    <!-- Menú de Navegación -->
-    <nav class="text-sm">
-        <ul class="space-y-4">
-            <li>
-                <a href="/admin/resumen" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-arrow-trend-up"></i>
-                    <span>Resumen diario</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/usuarios" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Usuarios</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/ventas" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-money-bill"></i>
-                    <span>Ventas</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/stock" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                    <span>Stock</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/ordenes" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-box"></i>
-                    <span>Órdenes</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/productos" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span>Productos</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/perfil" class="flex items-center space-x-3 hover:bg-gray-800 p-2 rounded transition">
-                    <i class="fa-solid fa-circle-user"></i>
-                    <span>Mi perfil</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Footer -->
+    <!-- Sidebar Footer -->
     <div class="mt-6">
         <p class="text-xs text-gray-400 text-center mb-4">Versión 0.0.1</p>
         <button class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
@@ -81,12 +98,3 @@
         </button>
     </div>
 </aside>
-
-<script>
-    const toggleSidebar = document.getElementById('toggleSidebar');
-    const adminSidebar = document.getElementById('adminSidebar');
-
-    toggleSidebar.addEventListener('click', () => {
-        adminSidebar.classList.toggle('-translate-x-full'); // Mueve la sidebar dentro o fuera de la pantalla
-    });
-</script>

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gestión de Usuarios
+{% endblock %}
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+<!-- Dejar vacío para no cargar el footer del cliente -->
+{% endblock %}
+
+{% block content %}
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    {% include "components/admin_navbar.html" %}
+
+    <!-- Contenido principal -->
+    <div id="mainContent" class="flex-grow p-6 bg-gray-100 transition-all duration-300 ease-in-out sm:ml-64">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">Usuarios registrados</h1>
+        <!-- Botón para agregar usuario -->
+        <div class="mt-6 mb-4 flex justify-end">
+            <button id="openModal" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
+                onclick="showModal(
+                    'userModal', 
+                    'Agregar Usuario',
+                    `<form id='addUserForm' onsubmit='return validateForm()'>
+                        <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                            <div>
+                                <label for='rut' class='block text-sm font-medium text-gray-700'>Rut</label>
+                                <input type='text' id='rut' name='rut' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                            </div>
+                            <div>
+                                <label for='name' class='block text-sm font-medium text-gray-700'>Nombre</label>
+                                <input type='text' id='name' name='name' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                            </div>
+                            <div>
+                                <label for='email' class='block text-sm font-medium text-gray-700'>Email</label>
+                                <input type='email' id='email' name='email' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                            </div>
+                            <div>
+                                <label for='role' class='block text-sm font-medium text-gray-700'>Rol</label>
+                                <select id='role' name='role' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                    <option value='Administrador'>Administrador</option>
+                                    <option value='Usuario'>Usuario</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for='password' class='block text-sm font-medium text-gray-700'>Contraseña</label>
+                                <input type='password' id='password' name='password' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                            </div>
+                            <div>
+                                <label for='confirm_password' class='block text-sm font-medium text-gray-700'>Confirmar Contraseña</label>
+                                <input type='password' id='confirm_password' name='confirm_password' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                            </div>
+                            <div>
+                                <label for='phone' class='block text-sm font-medium text-gray-700'>Teléfono</label>
+                                <input type='text' id='phone' name='phone' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                            </div>
+                            <div>
+                                <label for='phone-emergencia' class='block text-sm font-medium text-gray-700'>Teléfono emergencia</label>
+                                <input type='text' id='phone-emergencia' name='phone-emergencia' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                            </div>
+                            <div>
+                                <label for='address' class='block text-sm font-medium text-gray-700'>Dirección</label>
+                                <input type='text' id='address' name='address' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                            </div>
+                            <div>
+                                <label for='birthdate' class='block text-sm font-medium text-gray-700'>Fecha de Nacimiento</label>
+                                <input type='date' id='birthdate' name='birthdate' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                            </div>
+                            <div>
+                                <label for='profile_image' class='block text-sm font-medium text-gray-700'>Imagen de Perfil</label>
+                                <input type='file' id='profile_image' name='profile_image' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                            </div>
+                        </div>
+                    </form>`,
+                    'Guardar'
+                )">
+                Agregar Usuario
+            </button>
+        </div>
+
+        <script>
+            function validateForm() {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+
+                if (password !== confirmPassword) {
+                    alert('Las contraseñas no coinciden.');
+                    return false;
+                }
+                return true;
+            }
+        </script>
+        <!-- Tabla responsiva -->
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
+            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">ID</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Nombre</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Email</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Rol</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Fecha de
+                            Registro</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Imagen de
+                            perfil</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="px-4 py-2 text-gray-800">1</td>
+                        <td class="px-4 py-2 text-gray-800">Juan Pérez</td>
+                        <td class="px-4 py-2 text-gray-800">juan.perez@example.com</td>
+                        <td class="px-4 py-2 text-gray-800">Administrador</td>
+                        <td class="px-4 py-2 text-gray-800">2023-01-15</td>
+                        <td class="px-4 py-2">
+                            <img src="https://via.placeholder.com/40" alt="Perfil" class="w-10 h-10 rounded-full">
+                        </td>
+                        <td class="px-4 py-2 flex space-x-2">
+                            <!-- Botón Ver -->
+                            <button
+                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Ver Usuario', 'Nombre: Juan Pérez<br>Email: juan.perez@example.com<br>Rol: Administrador', 'Cerrar')">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Ver</span>
+                            </button>
+
+                            <!-- Botón Editar -->
+                            <!-- Botón Editar -->
+                            <button
+                                class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Editar Usuario', '<form><div class=&quot;mb-4&quot;><label for=&quot;name&quot; class=&quot;block text-sm font-medium text-gray-700&quot;>Nombre</label><input type=&quot;text&quot; id=&quot;name&quot; name=&quot;name&quot; value=&quot;Juan Pérez&quot; class=&quot;w-full border border-gray-300 rounded-lg p-2 mt-1&quot;></div><div class=&quot;mb-4&quot;><label for=&quot;email&quot; class=&quot;block text-sm font-medium text-gray-700&quot;>Email</label><input type=&quot;email&quot; id=&quot;email&quot; name=&quot;email&quot; value=&quot;juan.perez@example.com&quot; class=&quot;w-full border border-gray-300 rounded-lg p-2 mt-1&quot;></div></form>', 'Guardar')">
+                                <i class="fa-solid fa-pen"></i>
+                                <span>Editar</span>
+                            </button>
+
+                            <!-- Botón Eliminar -->
+                            <button
+                                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Eliminar Usuario', '¿Estás seguro de que deseas eliminar a <strong>Juan Pérez</strong>?', 'Eliminar', 'bg-red-500 hover:bg-red-600')">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir el modal -->
+{% include "components/modals.html" with modal_id="userModal" %}
+{% block modal_title %}Agregar Usuario{% endblock %}
+{% block modal_body %}
+<form>
+    <div class="mb-4">
+        <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
+        <input type="text" id="name" name="name" class="w-full border border-gray-300 rounded-lg p-2 mt-1">
+    </div>
+    <div class="mb-4">
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="email" name="email" class="w-full border border-gray-300 rounded-lg p-2 mt-1">
+    </div>
+</form>
+{% endblock %}
+{% block modal_buttons %}
+<button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+    onclick="hideModal('userModal')">
+    Cancelar
+</button>
+<button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+    Guardar
+</button>
+{% endblock %}
+{% endblock %}
