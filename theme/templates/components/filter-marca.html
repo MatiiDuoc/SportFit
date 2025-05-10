@@ -1,0 +1,22 @@
+<!-- Filtro de marcas -->
+<div class="mb-4">
+    <h2 class="text-lg font-bold text-gray-800 mb-4">Filtrar por:</h2>
+    <form method="GET" action="" class="flex flex-wrap gap-4">
+        <!-- Filtro por categoría -->
+        <div class="flex items-center space-x-2">
+            <label for="category" class="text-sm font-medium text-gray-700">Categoría:</label>
+            <select id="category" name="category" class="border border-gray-300 rounded-lg p-2">
+                <option value="">Todas</option>
+                <option value="Vestimenta">Vestimenta</option>
+                <option value="Implementos">Implementos</option>
+                <option value="Alimentos">Alimentos</option>
+            </select>
+        </div>
+
+        <!-- Botón para aplicar filtros -->
+        <div class="flex items-center">
+            <button type="submit"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Filtrar</button>
+        </div>
+    </form>
+</div>

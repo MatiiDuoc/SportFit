@@ -48,24 +48,12 @@ urlpatterns = [
     path('ventas/editar/<int:id>/', views.editar_venta, name='editar_venta'),
     path('ventas/eliminar/<int:id>/', views.eliminar_venta, name='eliminar_venta'),
     path('ventas/crear/', views.crear_venta, name='crear_venta'),
-    #stock
-    path('stock/', views.stock, name='stock'),
-    path('stock/<int:id>/', views.stock_detalle, name='stock_detalle'),
-    path('stock/editar/<int:id>/', views.editar_stock, name='editar_stock'),
-    path('stock/eliminar/<int:id>/', views.eliminar_stock, name='eliminar_stock'),
-    path('stock/crear/', views.crear_stock, name='crear_stock'),
     #productos
     path('productos/', views.productos, name='productos'),
     path('productos/<int:id>/', views.producto_detalle, name='producto_detalle'),
     path('productos/editar/<int:id>/', views.editar_producto, name='editar_producto'),
     path('productos/eliminar/<int:id>/', views.eliminar_producto, name='eliminar_producto'),
     path('productos/crear/', views.crear_producto, name='crear_producto'),
-    #categorias
-    path('categorias/', views.categorias, name='categorias'),
-    path('categorias/<int:id>/', views.categoria_detalle, name='categoria_detalle'),
-    path('categorias/editar/<int:id>/', views.editar_categoria, name='editar_categoria'),
-    path('categorias/eliminar/<int:id>/', views.eliminar_categoria, name='eliminar_categoria'),
-    path('categorias/crear/', views.crear_categoria, name='crear_categoria'),
     #marcas
     path('marcas/', views.marcas,  name='marcas'),
     path('marcas/<int:id>/', views.marca_detalle, name='marca_detalle'),

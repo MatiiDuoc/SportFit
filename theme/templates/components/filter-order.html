@@ -1,0 +1,40 @@
+<div class="mb-6">
+    <h2 class="text-lg font-bold text-gray-800 mb-4">Filtrar Órdenes</h2>
+    <form method="GET" action="" class="flex flex-wrap gap-4">
+        <!-- Filtro por cliente -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <label for="client" class="text-sm font-medium text-gray-700">Cliente:</label>
+            <select id="client" name="client" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+                <option value="">Todos</option>
+                <option value="Juan Pérez">Juan Pérez</option>
+                <option value="Ana López">Ana López</option>
+                <option value="Carlos Gómez">Carlos Gómez</option>
+            </select>
+        </div>
+
+        <!-- Filtro por fecha -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <label for="order_date" class="text-sm font-medium text-gray-700">Fecha:</label>
+            <input type="date" id="order_date" name="order_date" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+        </div>
+
+        <!-- Filtro por estado -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <label for="status" class="text-sm font-medium text-gray-700">Estado:</label>
+            <select id="status" name="status" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+                <option value="">Todos</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Completada">Completada</option>
+                <option value="Cancelada">Cancelada</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Enviado">En curso</option>
+            </select>
+        </div>
+
+        <!-- Botón para aplicar filtros -->
+        <div class="flex items-center w-full sm:w-auto">
+            <button type="submit"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full sm:w-auto">Filtrar</button>
+        </div>
+    </form>
+</div>

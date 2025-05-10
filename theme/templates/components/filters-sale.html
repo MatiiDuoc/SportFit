@@ -1,0 +1,25 @@
+<div class="mb-4">
+    <h2 class="text-base font-semibold text-gray-800 mb-4">Filtrar por:</h2>
+    <form method="GET" action="" class="flex flex-wrap gap-4">
+        <!-- Filtro por rango de precios -->
+        <div class="flex flex-wrap items-center space-x-2 w-full sm:w-auto">
+            <label for="price_min" class="text-sm font-medium text-gray-700">Precio:</label>
+            <input type="number" id="price_min" name="price_min" placeholder="Mín"
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20">
+            <span class="text-gray-500 hidden sm:inline">-</span>
+            <input type="number" id="price_max" name="price_max" placeholder="Máx"
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20">
+        </div>
+        <!-- Filtro por fecha -->
+        <div class="flex flex-wrap items-center space-x-2 w-full sm:w-auto">
+            <label for="sale_date" class="text-sm font-medium text-gray-700">Fecha:</label>
+            <input type="date" id="sale_date" name="sale_date"
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+        </div>
+        <!-- Botón para aplicar filtros -->
+        <div class="flex items-center w-full sm:w-auto">
+            <button type="submit"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full sm:w-auto">Filtrar</button>
+        </div>
+    </form>
+</div>

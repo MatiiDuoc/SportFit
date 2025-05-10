@@ -63,27 +63,6 @@ def crear_venta(request):
     # Vista para crear una venta
     return render(request, 'venta/crear_venta.html', {})
 
-# -------------------- Stock --------------------
-def stock(request):
-    # Vista para listar stock
-    return render(request, 'stock/stock.html', {})
-
-def stock_detalle(request):
-    # Vista para mostrar detalles de un stock
-    return render(request, 'stock/stock_detalle.html', {})
-
-def editar_stock(request):
-    # Vista para editar un stock
-    return render(request, 'stock/editar_stock.html', {})
-
-def eliminar_stock(request):
-    # Vista para eliminar un stock
-    return render(request, 'stock/eliminar_stock.html', {})
-
-def crear_stock(request):
-    # Vista para crear un stock
-    return render(request, 'stock/crear_stock.html', {})
-
 # -------------------- Productos --------------------
 def productos(request):
     # Vista para listar productos
@@ -104,28 +83,6 @@ def eliminar_producto(request):
 def crear_producto(request):
     # Vista para crear un producto
     return render(request, 'productos/crear_producto.html', {})
-
-# -------------------- Categorías --------------------
-def categorias(request):
-    # Vista para listar categorías
-    return render(request, 'categoria/categorias.html', {})
-
-def categoria_detalle(request):
-    # Vista para mostrar detalles de una categoría
-    return render(request, 'categoria/categoria_detalle.html', {})
-
-def editar_categoria(request):
-    # Vista para editar una categoría
-    return render(request, 'categoria/editar_categoria.html', {})
-
-def eliminar_categoria(request):
-    # Vista para eliminar una categoría
-    return render(request, 'categoria/eliminar_categoria.html', {})
-
-def crear_categoria(request):
-    # Vista para crear una categoría
-    return render(request, 'categoria/crear_categoria.html', {})
-
 # -------------------- Marcas --------------------
 def marcas(request):
     # Vista para listar marcas

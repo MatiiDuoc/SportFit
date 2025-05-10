@@ -1,3 +1,181 @@
-<!-- Plantilla para la vista 'marcas' -->
-<h1>Marcas</h1>
-<p>Esta es una plantilla generada automáticamente.</p>
+{% extends "base.html" %}
+
+{% block title %}
+Gestión de Marcas
+{% endblock %}
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+<!-- Dejar vacío para no cargar el footer del cliente -->
+{% endblock %}
+
+{% block content %}
+{% include "components/modals.html" with modal_id="userModal" %}
+
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="flex min-h-screen">
+    <div id="mainContent" class="flex-grow p-6 bg-gray-100 transition-all duration-300 ease-in-out sm:ml-64">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">Marcas Asociadas</h1>
+
+        {% include "components/filter-marca.html" %}
+
+        <div class="mt-2 mb-4 flex justify-end">
+            <button id="openModal" class="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-blue-600 transition"
+                onclick="showModal(
+            'userModal', 
+            'Agregar Marca',
+            `<form id='addBrandForm' onsubmit='return validateBrandForm()'>
+            <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div>
+                <label for='brand_name' class='block text-sm font-medium text-gray-700'>Nombre de la Marca</label>
+                <input type='text' id='brand_name' name='brand_name' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                </div>
+                <div>
+                <label for='brand_category' class='block text-sm font-medium text-gray-700'>Categoría</label>
+                <input type='text' id='brand_category' name='brand_category' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                </div>
+                <div class='sm:col-span-2'>
+                <label for='brand_description' class='block text-sm font-medium text-gray-700'>Descripción</label>
+                <textarea id='brand_description' name='brand_description' class='w-full border border-gray-300 rounded-lg p-2 mt-1' rows='3' required></textarea>
+                </div>
+            </div>
+            </form>`,
+            'Guardar'
+            )">
+                Agregar Marca nueva
+            </button>
+        </div>
+
+        <!-- Tabla de marcas -->
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
+            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">ID Marca</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Nombre</th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Categoría
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Descripción
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="px-4 py-2 text-gray-800">1</td>
+                        <td class="px-4 py-2 text-gray-800">Nike</td>
+                        <td class="px-4 py-2 text-gray-800">Vestimenta</td>
+                        <td class="px-4 py-2 text-gray-800">Marca líder en ropa deportiva.</td>
+                        <td class="px-4 py-2 flex space-x-2">
+                            <!-- Botón Ver -->
+                            <button
+                                class="bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Ver Marca', `
+                                    <p><strong>ID Marca:</strong> 1</p>
+                                    <p><strong>Nombre:</strong> Nike</p>
+                                    <p><strong>Categoría:</strong> Vestimenta</p>
+                                    <p><strong>Descripción:</strong> Marca líder en ropa deportiva.</p>
+                                `, 'Cerrar')">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Ver</span>
+                            </button>
+                            <!-- Botón Editar -->
+                            <button
+                                class="bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Editar Marca', `
+                                    <form id='editBrandForm' onsubmit='return validateBrandForm()'>
+                                        <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                            <div>
+                                                <label for='edit_brand_name' class='block text-sm font-medium text-gray-700'>Nombre de la Marca</label>
+                                                <input type='text' id='edit_brand_name' name='brand_name' value='Nike' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                            </div>
+                                            <div>
+                                                <label for='edit_brand_category' class='block text-sm font-medium text-gray-700'>Categoría</label>
+                                                <input type='text' id='edit_brand_category' name='brand_category' value='Vestimenta' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                            </div>
+                                            <div class='sm:col-span-2'>
+                                                <label for='edit_brand_description' class='block text-sm font-medium text-gray-700'>Descripción</label>
+                                                <textarea id='edit_brand_description' name='brand_description' class='w-full border border-gray-300 rounded-lg p-2 mt-1' rows='3' required>Marca líder en ropa deportiva.</textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                `, 'Guardar Cambios')">
+                                <i class="fa-solid fa-pen"></i>
+                                <span>Editar</span>
+                            </button>
+                            <!-- Botón Eliminar -->
+                            <button
+                                class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1"
+                                onclick="showModal('userModal', 'Eliminar Marca', `
+                                    <p>¿Estás seguro de que deseas eliminar esta marca?</p>
+                                    <p><strong>Nombre:</strong> Nike</p>
+                                    <p><strong>ID Marca:</strong> 1</p>
+                                `, 'Eliminar')">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="px-4 py-2 text-gray-800">2</td>
+                        <td class="px-4 py-2 text-gray-800">Adidas</td>
+                        <td class="px-4 py-2 text-gray-800">Vestimenta</td>
+                        <td class="px-4 py-2 text-gray-800">Ropa y calzado deportivo de alta calidad.</td>
+                        <td class="px-4 py-2 flex space-x-2">
+                            <button
+                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Ver</span>
+                            </button>
+                            <button
+                                class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-pen"></i>
+                                <span>Editar</span>
+                            </button>
+                            <button
+                                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="px-4 py-2 text-gray-800">3</td>
+                        <td class="px-4 py-2 text-gray-800">Gatorade</td>
+                        <td class="px-4 py-2 text-gray-800">Alimentos</td>
+                        <td class="px-4 py-2 text-gray-800">Bebidas isotónicas para deportistas.</td>
+                        <td class="px-4 py-2 flex space-x-2">
+                            <button
+                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Ver</span>
+                            </button>
+                            <button
+                                class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-pen"></i>
+                                <span>Editar</span>
+                            </button>
+                            <button
+                                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- Más filas aquí -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginador estático -->
+        {% include "components/paginator.html" %}
+    </div>
+</div>
+{% endblock %}

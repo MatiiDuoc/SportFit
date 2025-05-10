@@ -1,3 +1,21 @@
-<!-- Plantilla para la vista 'categorias' -->
-<h1>Categorias</h1>
-<p>Esta es una plantilla generada automáticamente.</p>
+{% extends "base.html" %}
+
+{% block title %}
+Gestión de Marcas
+{% endblock %}
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+<!-- Dejar vacío para no cargar el footer del cliente -->
+{% endblock %}
+
+{% block content %}
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+{% endblock %}

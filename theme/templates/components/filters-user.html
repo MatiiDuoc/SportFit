@@ -1,0 +1,43 @@
+<div class="mb-4">
+    <h2 class="text-base font-semibold text-gray-800 mb-4">Filtrar por:</h2>
+    <form method="GET" action="" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <!-- Dirección -->
+        <div>
+            <label for="address" class="block text-xs font-medium text-gray-700 mb-1">Dirección</label>
+            <select id="address" name="address" class="w-full border border-gray-300 rounded-md text-sm p-2">
+                <option value="">Todas</option>
+                <option value="Calle 123">Calle 123</option>
+                <option value="Avenida Principal">Avenida Principal</option>
+                <option value="Zona Norte">Zona Norte</option>
+            </select>
+        </div>
+
+        <!-- Rol -->
+        <div>
+            <label for="role" class="block text-xs font-medium text-gray-700 mb-1">Rol</label>
+            <select id="role" name="role" class="w-full border border-gray-300 rounded-md text-sm p-2">
+                <option value="">Todos</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Usuario">Cliente</option>
+                <option value="Usuario">Vendedor</option>
+                <option value="Usuario">Entrenador</option>
+                <option value="Usuario">Nutricionista</option>
+            </select>
+        </div>
+
+        <!-- Fecha -->
+        <div>
+            <label for="registration_date" class="block text-xs font-medium text-gray-700 mb-1">Fecha</label>
+            <input type="date" id="registration_date" name="registration_date"
+                class="w-full border border-gray-300 rounded-md text-sm p-2">
+        </div>
+
+        <!-- Botón -->
+        <div>
+            <button type="submit"
+                class="w-full bg-blue-500 text-white text-sm py-2 rounded-md hover:bg-blue-600 transition">
+                Filtrar
+            </button>
+        </div>
+    </form>
+</div>
