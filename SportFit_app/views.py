@@ -7,8 +7,24 @@ import json
 # Home
 def home(request):
     return render(request, 'home.html')
-
+def login_view(request):
+    # Vista para el inicio de sesión
+    return render(request, 'login/login.html')
+def logout_view(request):
+    # Vista para cerrar sesión
+    return render(request, 'logout.html')
+def registro(request):
+    # Vista para el registro de nuevos usuarios
+    return render(request, 'registro.html')
+def recuperar_contrasena(request):
+    # Vista para recuperar la contraseña
+    return render(request, 'recuperar_contrasena.html')
+def cambiar_contrasena(request):
+    # Vista para cambiar la contraseña
+    return render(request, 'cambiar_contrasena.html')
+#----------------------------------
 # Administrador
+#----------------------------------
 def dashboard_administrador(request):
     # Datos de ejemplo (pueden venir de la base de datos)
     ventas = [1200, 1900, 3000, 5000]
@@ -20,6 +36,10 @@ def dashboard_administrador(request):
         'semanas': json.dumps(semanas),
     }
     return render(request, 'admin/dashboard.html')
+# -------------------- reportes --------------------
+def reportes(request):
+    # Vista para mostrar reportes
+    return render(request, 'reportes/reporte.html', {})
 
 # -------------------- Usuarios --------------------
 def usuarios(request):

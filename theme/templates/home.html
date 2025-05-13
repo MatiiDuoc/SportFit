@@ -1,13 +1,213 @@
 <!-- filepath: c:\Users\matia\SportFit\theme\templates\home.html -->
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
-Página de Inicio
+Página de Inicio - SportFit
 {% endblock %}
 
 {% block content %}
-<section class="text-center">
-    <h1 class="text-4xl text-blue-500">Bienvenido a SportFit</h1>
-    <p class="text-lg text-gray-700">Tu plataforma para el deporte y la salud.</p>
+<section class="text-center py-10">
+    <h1 class="text-5xl font-extrabold text-blue-600">Bienvenido a SportFit</h1>
+    <p class="text-lg text-gray-700 mt-4">Tu plataforma para el deporte y la salud.</p>
 </section>
+
+<div class="flex flex-col md:flex-row items-center justify-between p-10 bg-gray-100 gap-8">
+    <!-- Imagen principal -->
+    <div class="flex-1">
+        <img src="{% static 'images/sport/Image 2@1x.png' %}" alt="Imagen principal"
+            class="w-full h-auto rounded-lg shadow-lg">
+    </div>
+
+    <!-- Texto y botón -->
+    <div class="flex-1 text-center md:text-left">
+        <h2 class="text-4xl font-bold text-black leading-tight">Activa tu vida con SportFit</h2>
+        <p class="mt-4 text-xl text-gray-600">Activa tu vida, alcanza tu mejor versión.</p>
+        <a href="/productos"
+            class="mt-6 inline-block bg-lime-500 text-black px-6 py-3 rounded-full hover:bg-lime-400 transition shadow-lg">
+            Explorar productos
+        </a>
+    </div>
+</div>
+<!-- Carrusel -->
+{% include "components/carrosel-marca.html" %}
+<!-- categoria de productos, comentarios -->
+<div class="bg-gray-100 min-h-screen flex flex-col">
+    <div class="container mx-auto p-4 flex flex-col md:flex-row gap-8">
+        <!-- Categorías -->
+        <div class="md:w-1/2 p-4">
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <!-- Ropa deportiva -->
+                <a href="/ropa-deportiva"
+                    class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center transform transition hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-tshirt text-teal-500 text-3xl mb-3"></i>
+                    <span class="text-base font-medium text-gray-800">Ropa deportiva</span>
+                </a>
+
+                <!-- Accesorios -->
+                <a href="/accesorios"
+                    class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center transform transition hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-dumbbell text-yellow-500 text-3xl mb-3"></i>
+                    <span class="text-base font-medium text-gray-800">Accesorios</span>
+                </a>
+
+                <!-- Equipamiento -->
+                <a href="/equipamiento"
+                    class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center transform transition hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-basketball-ball text-orange-500 text-3xl mb-3"></i>
+                    <span class="text-base font-medium text-gray-800">Equipamiento</span>
+                </a>
+
+                <!-- Nutrición -->
+                <a href="/nutricion"
+                    class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center transform transition hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-apple-alt text-green-500 text-3xl mb-3"></i>
+                    <span class="text-base font-medium text-gray-800">Nutrición</span>
+                </a>
+            </div>
+
+            <!-- Comentarios a esto despues se le aplicara un  FOR para poder recuperar comentarios desde la BD-->
+            <div class="mb-8">
+                <h2
+                    class="text-3xl font-semibold text-gray-800 mb-4 underline decoration-gray-300 decoration-4 rounded-full">
+                    Comentarios</h2>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <blockquote class="text-gray-700 italic">
+                        <svg class="w-6 h-6 text-gray-400 inline-block mr-2 -mt-1" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 12a1 1 0 10-2 0v-2a1 1 0 00-1-1h-1a1 1 0 100 2h2a2 2 0 002-2V8a1 1 0 10-2 0v2a1 1 0 00-1 1H6a1 1 0 100-2h2a2 2 0 002 2v4zm-4-6a1 1 0 100-2 1 1 0 000 2z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        Desde que uso SportFit, entrenar es más fácil y rápido.
+                    </blockquote>
+                    <div class="flex items-center mt-4">
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.811 3.545 1.123 6.545z" />
+                        </svg>
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.811 3.545 1.123 6.545z" />
+                        </svg>
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.811 3.545 1.123 6.545z" />
+                        </svg>
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.811 3.545 1.123 6.545z" />
+                        </svg>
+                        <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.811 3.545 1.123 6.545z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promociones -->
+        <div class="md:w-1/2 p-4 mt-20">
+            <div
+                class="bg-white rounded-lg shadow-lg p-8 text-start transform transition hover:scale-105 hover:shadow-xl">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">¡Descuentos del 20%!</h1>
+                <p class="text-lg text-gray-600 mb-4">Exclusivo para alumnos</p>
+                <p class="text-2xl font-bold text-lime-500 underline decoration-lime-400">Sabor Latino Chile</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Beneficios -->
+    <div class="bg-white border-t border-gray-200 py-6 flex justify-around">
+        <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Envíos rápidos</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Calidad garantizada</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 10h18M7 15h1m4 0h1m-7 4l-2-2m2-2l2-2m-2 2h4.586a1 1 0 01.707.293l2.914 2.914a1 1 0 00.707.293h6.828a2 2 0 002-2V11a2 2 0 00-2-2H3a2 2 0 00-2 2v8a2 2 0 002 2z">
+                </path>
+            </svg>
+            <span class="text-sm text-gray-600">Pago seguro</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                </path>
+            </svg>
+            <span class="text-sm text-gray-600">Atención personalizada</span>
+        </div>
+    </div>
+    <div class="py-12">
+        <div class="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Formulario de contacto -->
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">“Tu bienestar empieza aquí.”</h2>
+                <div class="bg-gray-100 rounded-lg p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Formulario de contacto</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <input type="text"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-lime-500 focus:border-lime-500"
+                                placeholder="Nombre" required>
+                        </div>
+                        <div>
+                            <input type="text"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-lime-500 focus:border-lime-500"
+                                placeholder="Apellido" required>
+                        </div>
+                        <div>
+                            <input type="email"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-lime-500 focus:border-lime-500"
+                                placeholder="Correo electrónico" required>
+                        </div>
+                        <div>
+                            <input type="tel"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-lime-500 focus:border-lime-500"
+                                placeholder="Número celular" required>
+                        </div>
+                        <div>
+                            <textarea
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-lime-500 focus:border-lime-500"
+                                rows="4" placeholder="Más detalles" required></textarea>
+                        </div>
+                        <div>
+                            <button type="submit"
+                                class="w-full bg-lime-500 text-white py-3 rounded-md hover:bg-lime-600 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-2 transition">
+                                Enviar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Ubicación -->
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">En dónde estamos ubicados</h2>
+                <div class="rounded-lg shadow-lg overflow-hidden">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3330.878979977595!2d-70.5799787234274!3d-33.5948979804879!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662d5094c165213%3A0x9f4499c49c788659!2sPuente%20Alto%2C%20Regi%C3%B3n%20Metropolitana!5e0!3m2!1ses-419!2scl!4v1715647738887!5m2!1ses-419!2scl"
+                        width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- formulario de contacto -->
+
 {% endblock %}

@@ -22,6 +22,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('__reload__/', include('django_browser_reload.urls')),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('registro/', views.registro, name='registro'),
+    path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
+    path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     #========================
     #CLIENTE
     #========================
@@ -80,5 +85,7 @@ urlpatterns = [
     path('perfil/editar_email/', views.editar_email, name='editar_email'),
     #dashboard
     path('dashboard_administrador/', views.dashboard_administrador, name='dashboard_administrador'),
+    #reportes
+    path('reportes/', views.reportes, name='reportes'),
 
 ]

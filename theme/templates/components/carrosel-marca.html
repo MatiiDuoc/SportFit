@@ -1,0 +1,64 @@
+<!-- Carrusel de marcas con SVG -->
+{% load static %}
+
+<h2 class="text-center text-3xl font-semibold mb-8">Marcas destacadas</h2>
+<div class="container mx-auto px-4 overflow-hidden">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide flex items-center justify-center">
+                <img src="{% static 'images/banners/puma.svg' %}" alt="Puma" class="h-16 w-auto object-contain">
+            </div>
+            <div class="swiper-slide flex items-center justify-center">
+                <img src="{% static 'images/banners/adidas-8.svg' %}" alt="Adidas" class="h-16 w-auto object-contain">
+            </div>
+            <div class="swiper-slide flex items-center justify-center">
+                <img src="{% static 'images/banners/nike-9.svg' %}" alt="Nike" class="h-16 w-auto object-contain">
+            </div>
+            <div class="swiper-slide flex items-center justify-center">
+                <img src="{% static 'images/banners/umbro-1.svg' %}" alt="Umbro" class="h-16 w-auto object-contain">
+            </div>
+            <div class="swiper-slide flex items-center justify-center">
+                <img src="{% static 'images/banners/under-armour-logo.svg' %}" alt="Under Armour" class="h-16 w-auto object-contain">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye los archivos necesarios de Swiper -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+<script>
+    // Inicializa Swiper
+    const swiper = new Swiper('.swiper-container', {
+        slidesPerView: 1, // Muestra 1 imagen por vista en pantallas muy pequeñas
+        spaceBetween: 10, // Espaciado entre imágenes
+        loop: true, // Habilita el loop infinito
+        autoplay: {
+            delay: 3000, // Cambia cada 3 segundos
+            disableOnInteraction: false, // Continúa el autoplay incluso si el usuario interactúa
+        },
+        breakpoints: {
+            480: {
+                slidesPerView: 2, // Muestra 2 imágenes en pantallas pequeñas
+                spaceBetween: 15,
+            },
+            768: {
+                slidesPerView: 3, // Muestra 3 imágenes en pantallas medianas
+                spaceBetween: 20,
+            },
+            1024: {
+                slidesPerView: 4, // Muestra 4 imágenes en pantallas grandes
+                spaceBetween: 25,
+            },
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+    });
+</script>
