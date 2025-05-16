@@ -1,0 +1,24 @@
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="relative">
+        <img src="{{ producto.imagen_url }}" alt="{{ producto.titulo }}" class="w-full h-48 object-cover object-center">
+        {% if producto.destacado %}
+            <div class="absolute top-2 left-2 bg-yellow-500 text-white text-xs rounded-full px-2 py-1">
+                Destacado
+            </div>
+        {% endif %}
+    </div>
+    <div class="p-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ producto.titulo }}</h3>
+        <p class="text-sm text-gray-600 mb-2">Cantidad: {{ producto.cantidad }}</p>
+        <p class="text-sm text-gray-600 mb-2">Marca: {{ producto.marca }}</p>
+        <p class="text-sm text-gray-700 mb-3">{{ producto.descripcion|truncatechars:50 }}</p>
+        <div class="flex items-center justify-between">
+            <span class="text-xl font-bold text-green-600">${{ producto.precio }}</span>
+            <button class="bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-lime-500">
+                Agregar al carrito
+            </button>
+        </div>
+    </div>
+</div>

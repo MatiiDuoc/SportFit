@@ -1,27 +1,35 @@
-# Archivos de entorno virtual
-venv/
-env/
+# Archivos de variables de entorno y secretos
+.env
+*.env
+*.secret
+*.key
 
-# Archivos de configuración de Python
-*.pyc
-*.pyo
-__pycache__/
+# Archivos de base de datos adicionales
+*.sqlite3
+*.db
 
-# Archivos de configuración de Django
-db.sqlite3
-*.log
+# Archivos de migraciones de Django (si no quieres compartirlas, aunque normalmente sí se comparten)
+# SportFit_app/migrations/__pycache__/
 
-# Archivos estáticos generados
-SportFit_app/static/output.css
+# Archivos de dependencias de Python
+*.egg-info/
+dist/
+build/
 
-# Archivos de Node.js
+# Archivos de salida de Selenium/ChromeDriver
+chromedriver.exe
+chromedriver.log
+
+# Archivos de medios subidos por usuarios
+media/
+uploads/
+
+# Archivos de dependencias de Node.js
 node_modules/
-package-lock.json
 
-# Archivos del sistema operativo
-.DS_Store
-Thumbs.db
+# Archivos de cache de pip
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Archivos de configuración de IDEs
-.vscode/
-.idea/
+# Archivos de configuración de Oracle (si usas tnsnames.ora, etc.)
+*.ora

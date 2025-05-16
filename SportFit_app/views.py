@@ -1,9 +1,19 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import json
+import requests
+from django.contrib.auth.models import User  # O tu modelo personalizado
+import urllib3
+from requests.exceptions import RequestException
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Create your views here.
-
+#----------------------------------
+# Cliente
+#----------------------------------
 # Home
 def home(request):
     return render(request, 'home.html')
@@ -15,13 +25,18 @@ def logout_view(request):
     return render(request, 'logout.html')
 def registro(request):
     # Vista para el registro de nuevos usuarios
-    return render(request, 'registro.html')
+    return render(request, 'registro/registro.html')
 def recuperar_contrasena(request):
     # Vista para recuperar la contraseña
-    return render(request, 'recuperar_contrasena.html')
+    return render(request, 'recuperar_contrasena/recuperar_contrasena.html')
 def cambiar_contrasena(request):
     # Vista para cambiar la contraseña
     return render(request, 'cambiar_contrasena.html')
+def productos_cliente(request):
+    # Vista para listar productos para el cliente
+    return render(request, 'client/productos.html', {})
+
+
 #----------------------------------
 # Administrador
 #----------------------------------
@@ -35,16 +50,38 @@ def dashboard_administrador(request):
         'ventas': json.dumps(ventas),  # Convertir a JSON para usar en JavaScript
         'semanas': json.dumps(semanas),
     }
-    return render(request, 'admin/dashboard.html')
+    return render(request, 'admin/dashboard/dashboard.html')
 # -------------------- reportes --------------------
 def reportes(request):
     # Vista para mostrar reportes
-    return render(request, 'reportes/reporte.html', {})
+    return render(request, 'admin/reportes/reporte.html', {})
 
 # -------------------- Usuarios --------------------
+def obtener_usuarios_api():
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+    driver.get('https://www.saborlatinochile.cl/duoc/servicio_web_sportfit.php?i=1')
+    import time
+    time.sleep(2)  # Espera a que cargue la página y el JSON
+    try:
+        # Si el JSON se muestra en un <pre>
+        data = driver.find_element("tag name", "pre").text
+        usuarios = json.loads(data)
+    except Exception as e:
+        print("ERROR OBTENIENDO USUARIOS:", e)
+        usuarios = []
+    driver.quit()
+    return usuarios
+
 def usuarios(request):
-    # Vista para listar usuarios
-    return render(request, 'usuario/usuarios.html', {})
+    try:
+        usuarios_api = obtener_usuarios_api()
+    except Exception as e:
+        print("ERROR:", e)
+        usuarios_api = []
+    context = {'usuarios_api': usuarios_api}
+    return render(request, 'admin/usuario/usuarios.html', context)
 
 def usuario_detalle(request):
     # Vista para mostrar detalles de un usuario
@@ -65,7 +102,7 @@ def crear_usuario(request):
 # -------------------- Ventas --------------------
 def ventas(request):
     # Vista para listar ventas
-    return render(request, 'venta/ventas.html', {})
+    return render(request, 'admin/venta/ventas.html', {})
 
 def venta_detalle(request):
     # Vista para mostrar detalles de una venta
@@ -86,7 +123,7 @@ def crear_venta(request):
 # -------------------- Productos --------------------
 def productos(request):
     # Vista para listar productos
-    return render(request, 'productos/productos.html', {})
+    return render(request, 'admin/productos/productos.html', {})
 
 def producto_detalle(request):
     # Vista para mostrar detalles de un producto
@@ -106,7 +143,7 @@ def crear_producto(request):
 # -------------------- Marcas --------------------
 def marcas(request):
     # Vista para listar marcas
-    return render(request, 'marcas/marcas.html', {})
+    return render(request, 'admin/marcas/marcas.html', {})
 
 def marca_detalle(request):
     # Vista para mostrar detalles de una marca
@@ -127,7 +164,7 @@ def crear_marca(request):
 # -------------------- Proveedores --------------------
 def proveedores(request):
     # Vista para listar proveedores
-    return render(request, 'proveedores/proveedores.html', {})
+    return render(request, 'admin/proveedores/proveedores.html', {})
 
 def proveedor_detalle(request):
     # Vista para mostrar detalles de un proveedor
@@ -148,7 +185,7 @@ def crear_proveedor(request):
 # -------------------- Órdenes --------------------
 def ordenes(request):
     # Vista para listar órdenes
-    return render(request, 'ordenes/ordenes.html', {})
+    return render(request, 'admin/ordenes/ordenes.html', {})
 
 def orden_detalle(request):
     # Vista para mostrar detalles de una orden
@@ -161,7 +198,7 @@ def editar_orden(request):
 # -------------------- Perfil --------------------
 def perfil(request):
     # Vista para mostrar el perfil del usuario
-    return render(request, 'perfil/perfil.html', {})
+    return render(request, 'admin/perfil/perfil.html', {})
 
 def editar_perfil(request):
     # Vista para editar el perfil del usuario

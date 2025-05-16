@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Recuperar Contraseña - SportFit{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-10">
+    <div class="bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-md p-8">
+        <div class="flex justify-center mb-6">
+            <img src="{% static 'images/logo/SportFit@1x.png' %}" alt="Logo SportFit" class="h-12">
+        </div>
+        <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Recuperar Contraseña</h2>
+        <p class="text-gray-600 text-center mb-6">
+            Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+        </p>
+        <form method="POST" class="space-y-4" id="recuperarForm" novalidate>
+            {% csrf_token %}
+            <div>
+                <label for="correo" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                <input type="email" id="correo" name="correo"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="ejemplo@correo.com" required>
+                <p class="text-xs text-red-500 mt-1 hidden" id="correoError"></p>
+            </div>
+            <button type="submit"
+                class="w-full bg-lime-400 text-black py-2.5 px-4 rounded-md font-semibold hover:bg-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-2 transition">
+                Enviar instrucciones
+            </button>
+        </form>
+        <p class="text-center text-sm text-gray-600 mt-6">
+            ¿Recuerdas tu contraseña?
+            <a href="{% url 'login' %}" class="text-blue-500 font-semibold hover:underline">
+                Inicia sesión aquí
+            </a>
+        </p>
+    </div>
+</div>
+<script>
+    document.getElementById('recuperarForm').addEventListener('submit', function (e) {
+        const correo = document.getElementById('correo');
+        const correoError = document.getElementById('correoError');
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(correo.value)) {
+            correoError.textContent = "Ingrese un correo electrónico válido.";
+            correoError.classList.remove('hidden');
+            e.preventDefault();
+        } else {
+            correoError.classList.add('hidden');
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = "Enviando...";
+        }
+    });
+
+</script>
+{% endblock %}

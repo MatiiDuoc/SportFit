@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registro - SportFit{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-10">
+    <div class="bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
+        <!-- Imagen de bienvenida -->
+        <div class="hidden md:flex md:w-1/2 bg-gradient-to-br from-yellow-400 to-red-500 items-center justify-center">
+            <div class="flex items-center justify-center w-full h-full p-0">
+                <img src="{% static 'images/sport/Image 1@1x.png' %}" alt="Imagen de Bienvenida"
+                    class="object-cover max-auto h-auto mx-auto rounded-lg shadow-xl" />
+            </div>
+        </div>
+        <!-- Formulario -->
+        <div class="w-full md:w-1/2 flex flex-col justify-center px-8 py-8 md:px-16 md:py-16">
+            <div class="flex justify-center mb-6">
+                <img src="{% static 'images/logo/SportFit@1x.png' %}" alt="Logo SportFit" class="h-10">
+            </div>
+            <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Crear Cuenta</h2>
+            <form id="registroForm" method="POST" class="space-y-4" novalidate>
+                {% csrf_token %}
+                <div>
+                    <label for="rut" class="block text-sm font-medium text-gray-700">Rut</label>
+                    <input type="text" name="rut" id="rut" class="mt-1 block w-full border rounded-md p-3"
+                        placeholder="12.345.678-9">
+                    <p class="text-xs text-red-500 mt-1 hidden" id="rutError"></p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full">
+                        <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" class="mt-1 block w-full border rounded-md p-3">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="nombreError"></p>
+                    </div>
+                    <div class="w-full">
+                        <label for="apellido" class="block text-sm font-medium text-gray-700">Apellido</label>
+                        <input type="text" name="apellido" id="apellido"
+                            class="mt-1 block w-full border rounded-md p-3">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="apellidoError"></p>
+                    </div>
+                </div>
+                <div>
+                    <label for="genero" class="block text-sm font-medium text-gray-700">Género</label>
+                    <select name="genero" id="genero" class="mt-1 block w-full border rounded-md p-3">
+                        <option value="">Selecciona una opción</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                    <p class="text-xs text-red-500 mt-1 hidden" id="generoError"></p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full">
+                        <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="tel" name="telefono" id="telefono" class="mt-1 block w-full border rounded-md p-3"
+                            placeholder="9XXXXXXXX">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="telefonoError"></p>
+                    </div>
+                    <div class="w-full">
+                        <label for="telefono_emergencia" class="block text-sm font-medium text-gray-700">Teléfono de
+                            emergencia</label>
+                        <input type="tel" name="telefono_emergencia" id="telefono_emergencia"
+                            class="mt-1 block w-full border rounded-md p-3" placeholder="9XXXXXXXX">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="telefonoEmergenciaError"></p>
+                    </div>
+                </div>
+                <div>
+                    <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de
+                        Nacimiento</label>
+                    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
+                        class="mt-1 block w-full border rounded-md p-3">
+                    <p class="text-xs text-red-500 mt-1 hidden" id="fechaNacimientoError"></p>
+                </div>
+                <div>
+                    <label for="correo_electronico" class="block text-sm font-medium text-gray-700">Correo
+                        electrónico</label>
+                    <input type="email" name="correo_electronico" id="correo_electronico"
+                        class="mt-1 block w-full border rounded-md p-3">
+                    <p class="text-xs text-red-500 mt-1 hidden" id="correoError"></p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full">
+                        <label for="contrasena" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                        <input type="password" name="contrasena" id="contrasena"
+                            class="mt-1 block w-full border rounded-md p-3">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="contrasenaError"></p>
+                    </div>
+                    <div class="w-full">
+                        <label for="confirmar_contrasena" class="block text-sm font-medium text-gray-700">Confirmar
+                            contraseña</label>
+                        <input type="password" name="confirmar_contrasena" id="confirmar_contrasena"
+                            class="mt-1 block w-full border rounded-md p-3">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="confirmarContrasenaError"></p>
+                    </div>
+                </div>
+                <hr>
+                <button type="submit"
+                    class="w-full  text-black hover:bg-lime-300 bg-lime-400 transition shadow-lg font-bold py-3 px-4 rounded mt-4 text-lg">
+                    Registrarse
+                </button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-6">
+                ¿Ya tienes una cuenta?
+                <a href="{% url 'login' %}" class="text-blue-500 font-semibold hover:underline">
+                    Inicia sesión aquí
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const registroForm = document.getElementById('registroForm');
+        function mostrarError(elementId, mensaje) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = mensaje;
+            errorElement.classList.remove('hidden');
+        }
+        function ocultarError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+        }
+        function validarRut(rut) {
+            rut = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
+            if (!/^\d{7,8}[0-9K]$/.test(rut)) return false;
+            let cuerpo = rut.slice(0, -1);
+            let dv = rut.slice(-1);
+            let suma = 0, multiplo = 2;
+            for (let i = cuerpo.length - 1; i >= 0; i--) {
+                suma += parseInt(cuerpo[i]) * multiplo;
+                multiplo = multiplo < 7 ? multiplo + 1 : 2;
+            }
+            let dvEsperado = 11 - (suma % 11);
+            dvEsperado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+            return dv === dvEsperado;
+        }
+        registroForm.addEventListener('submit', function (e) {
+            let valid = true;
+            // Rut
+            const rutInput = document.getElementById('rut');
+            if (!validarRut(rutInput.value)) {
+                mostrarError('rutError', "Ingrese un RUT válido (ej: 12.345.678-9)");
+                valid = false;
+            } else {
+                ocultarError('rutError');
+            }
+            // Nombre
+            const nombreInput = document.getElementById('nombre');
+            if (nombreInput.value.trim().length < 2) {
+                mostrarError('nombreError', "Ingrese un nombre válido.");
+                valid = false;
+            } else {
+                ocultarError('nombreError');
+            }
+            // Apellido
+            const apellidoInput = document.getElementById('apellido');
+            if (apellidoInput.value.trim().length < 2) {
+                mostrarError('apellidoError', "Ingrese un apellido válido.");
+                valid = false;
+            } else {
+                ocultarError('apellidoError');
+            }
+            // Género
+            const generoInput = document.getElementById('genero');
+            if (generoInput.value === "") {
+                mostrarError('generoError', "Seleccione un género.");
+                valid = false;
+            } else {
+                ocultarError('generoError');
+            }
+            // Teléfono
+            const telefonoInput = document.getElementById('telefono');
+            const telefonoPattern = /^[0-9]{8,9}$/;
+            if (!telefonoPattern.test(telefonoInput.value)) {
+                mostrarError('telefonoError', "Ingrese un teléfono válido (8 o 9 dígitos).");
+                valid = false;
+            } else {
+                ocultarError('telefonoError');
+            }
+            // Fecha de nacimiento
+            const fechaNacimientoInput = document.getElementById('fecha_nacimiento');
+            if (!fechaNacimientoInput.value) {
+                mostrarError('fechaNacimientoError', "Ingrese su fecha de nacimiento.");
+                valid = false;
+            } else {
+                ocultarError('fechaNacimientoError');
+            }
+            // Teléfono emergencia
+            const telefonoEmergenciaInput = document.getElementById('telefono_emergencia');
+            if (!telefonoPattern.test(telefonoEmergenciaInput.value)) {
+                mostrarError('telefonoEmergenciaError', "Ingrese un teléfono válido (8 o 9 dígitos).");
+                valid = false;
+            } else {
+                ocultarError('telefonoEmergenciaError');
+            }
+            // Correo electrónico
+            const correoInput = document.getElementById('correo_electronico');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(correoInput.value)) {
+                mostrarError('correoError', "Ingrese un correo electrónico válido.");
+                valid = false;
+            } else {
+                ocultarError('correoError');
+            }
+            // Contraseña
+            const contrasenaInput = document.getElementById('contrasena');
+            if (contrasenaInput.value.length < 6) {
+                mostrarError('contrasenaError', "La contraseña debe tener al menos 6 caracteres.");
+                valid = false;
+            } else {
+                ocultarError('contrasenaError');
+            }
+            // Confirmar contraseña
+            const confirmarContrasenaInput = document.getElementById('confirmar_contrasena');
+            if (contrasenaInput.value !== confirmarContrasenaInput.value) {
+                mostrarError('confirmarContrasenaError', "Las contraseñas no coinciden.");
+                valid = false;
+            } else {
+                ocultarError('confirmarContrasenaError');
+            }
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+        // Ocultar errores al escribir
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', function () {
+                const errorId = this.id.charAt(0).toLowerCase() + this.id.slice(1) + 'Error';
+                if (document.getElementById(errorId)) {
+                    ocultarError(errorId);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

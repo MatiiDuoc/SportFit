@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Gestión de Usuarios
+{% endblock %}
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block content %}
+{% include "components/modals.html" with modal_id="userModal" %}
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="flex min-h-screen bg-gray-100">
+    <!-- Contenido principal -->
+    <main id="mainContent"
+        class="flex-grow p-4 sm:p-6 bg-gray-100 transition-all duration-300 ease-in-out ml-0 sm:ml-64">
+        <header class="mb-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-800">Usuarios registrados</h1>
+            <button id="openModal" type="button"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition font-semibold flex items-center gap-2"
+                onclick="showModal(
+                        'userModal',
+                        'Agregar Usuario',
+                        `<form id='addUserForm' onsubmit='return validateForm()'>
+                            <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <div>
+                                    <label for='rut' class='block text-sm font-medium text-gray-700'>Rut</label>
+                                    <input type='text' id='rut' name='rut' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                </div>
+                                <div>
+                                    <label for='name' class='block text-sm font-medium text-gray-700'>Nombre</label>
+                                    <input type='text' id='name' name='name' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                </div>
+                                <div>
+                                    <label for='email' class='block text-sm font-medium text-gray-700'>Email</label>
+                                    <input type='email' id='email' name='email' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                </div>
+                                <div>
+                                    <label for='role' class='block text-sm font-medium text-gray-700'>Rol</label>
+                                    <select id='role' name='role' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                        <option value='Administrador'>Administrador</option>
+                                        <option value='Usuario'>Usuario</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for='password' class='block text-sm font-medium text-gray-700'>Contraseña</label>
+                                    <input type='password' id='password' name='password' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                </div>
+                                <div>
+                                    <label for='confirm_password' class='block text-sm font-medium text-gray-700'>Confirmar Contraseña</label>
+                                    <input type='password' id='confirm_password' name='confirm_password' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
+                                </div>
+                                <div>
+                                    <label for='phone' class='block text-sm font-medium text-gray-700'>Teléfono</label>
+                                    <input type='text' id='phone' name='phone' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                                </div>
+                                <div>
+                                    <label for='phone-emergencia' class='block text-sm font-medium text-gray-700'>Teléfono emergencia</label>
+                                    <input type='text' id='phone-emergencia' name='phone-emergencia' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                                </div>
+                                <div>
+                                    <label for='address' class='block text-sm font-medium text-gray-700'>Dirección</label>
+                                    <input type='text' id='address' name='address' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                                </div>
+                                <div>
+                                    <label for='birthdate' class='block text-sm font-medium text-gray-700'>Fecha de Nacimiento</label>
+                                    <input type='date' id='birthdate' name='birthdate' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                                </div>
+                                <div>
+                                    <label for='profile_image' class='block text-sm font-medium text-gray-700'>Imagen de Perfil</label>
+                                    <input type='file' id='profile_image' name='profile_image' class='w-full border border-gray-300 rounded-lg p-2 mt-1'>
+                                </div>
+                            </div>
+                        </form>`,
+                        'Guardar'
+                    )">
+                <i class="fa-solid fa-user-plus"></i> Agregar Usuario
+            </button>
+        </header>
+
+        {% include "components/filters-user.html" %}
+
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
+            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                <thead class="bg-gray-200 text-gray-700">
+                    <tr>
+                        <th class="px-3 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">RUT</th>
+                        <th class="px-3 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Nombre Completo
+                        </th>
+                        <th class="px-3 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Dirección</th>
+                        <th class="px-3 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios_api %}
+                    <tr class="hover:bg-gray-100 transition-colors duration-200">
+                        <td class="px-3 sm:px-4 py-2">{{ usuario.numero_rut }}-{{ usuario.dv_rut }}</td>
+                        <td class="px-3 sm:px-4 py-2">
+                            {{ usuario.primer_nombre }} {{ usuario.segundo_nombre }}<br>
+                            <span class="text-gray-500 text-xs">{{ usuario.apellido_paterno }} {{usuario.apellido_materno }}</span>
+                        </td>
+                        <td class="px-3 sm:px-4 py-2">{{ usuario.direccion }}</td>
+                        <td class="px-3 sm:px-4 py-2">{{ usuario.telefono }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-gray-500">No hay usuarios disponibles.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "components/paginator.html" %}
+    </main>
+</div>
+{% endblock %}
