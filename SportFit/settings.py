@@ -10,7 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path
+from pathlib import Path 
+from dotenv import load_dotenv
+import os
+load_dotenv()  # Carga las variables del archivo .env
+
+ORACLE_HOST = os.getenv('ORACLE_HOST', 'localhost')
+ORACLE_PORT = os.getenv('ORACLE_PORT', '1521')
+ORACLE_SERVICE = os.getenv('ORACLE_SERVICE', 'XE')
+ORACLE_USER = os.getenv('ORACLE_USER', 'SportFit')
+ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'SportFit')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,11 +106,11 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
-        'default': {
+    'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'localhost:1521/XE',  # Cambia por tu host, puerto y servicio/SID
-        'USER': 'SportFit',
-        'PASSWORD': 'SportFit',
+        'NAME': f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}",
+        'USER': ORACLE_USER,
+        'PASSWORD': ORACLE_PASSWORD,
     }
 }
 
