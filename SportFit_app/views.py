@@ -19,6 +19,8 @@ from transbank.common.integration_type import IntegrationType
 from transbank.webpay.webpay_plus.transaction import Transaction
 from transbank.common.options import WebpayOptions
 import paypalrestsdk
+from dotenv import load_dotenv
+import os
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -355,9 +357,9 @@ def webpay_retorno(request):
 
 #paypal
 paypalrestsdk.configure({
-    "mode": "sandbox",  # sandbox o live
-    "client_id": "AQOJfhilIjFvum229XltMVFSdB7s90R8FP7FgBOTrq0vQG4hjq0mnWaWBXG2C2BdTih6jLCyERQt1BJE",
-    "client_secret": "ELtDyBybhL4tZfKRe1GXmeUgcWPVY036SDwVNkIts7_YcUQHyfuCLaWShl4WHXY9bbDGUqL90cVzU0po"
+    "mode": "sandbox",
+    "client_id": os.getenv("PAYPAL_CLIENT_ID"),
+    "client_secret": os.getenv("PAYPAL_CLIENT_SECRET")
 })
 
 def iniciar_pago_paypal(request):
