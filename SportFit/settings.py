@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'SportFit_app',
     'tailwind',
     'theme',
-    'django_browser_reload'
+    'django_browser_reload',
+    'widget_tweaks',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -81,7 +82,11 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
 
 
-        'DIRS': [BASE_DIR / 'SportFit_app' / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'SportFit_app' / 'templates',
+            BASE_DIR / 'theme' / 'templates',
+        ],
+        
 
         'APP_DIRS': True,
         'OPTIONS': {
@@ -90,6 +95,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'SportFit_app.context_processors.carrito_context',
             ],
         },
     },
@@ -113,6 +119,9 @@ DATABASES = {
         'PASSWORD': ORACLE_PASSWORD,
     }
 }
+
+WEBPAY_COMMERCE_CODE = os.getenv('WEBPAY_COMMERCE_CODE', '597055555532')
+WEBPAY_ENVIRONMENT = os.getenv('WEBPAY_ENVIRONMENT', 'TEST')
 
 
 # Password validation
@@ -151,7 +160,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [BASE_DIR / 'SportFit_app' / 'static']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'theme', 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

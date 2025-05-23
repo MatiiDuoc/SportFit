@@ -33,22 +33,64 @@
         </ul>
         <div class="hidden md:flex items-center space-x-4">
             {% if request.user.is_authenticated %}
-            <div class="relative">
+            <div class="relative group">
+                <a href="{% url 'carrito' %}" class="relative flex items-center" aria-label="Ver carrito">
+                    <!-- Icono SVG de carrito -->
+                    <svg class="w-7 h-7 text-gray-700 hover:text-blue-600 transition-colors duration-200" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007.5 17h9a1 1 0 00.85-1.53L17 13M7 13V6m10 7V6M6 21a1 1 0 100-2 1 1 0 000 2zm12 0a1 1 0 100-2 1 1 0 000 2z" />
+                    </svg>
+                    {% if carrito_cantidad > 0 %}
+                    <span
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-[1.5rem] text-center">
+                        {{ carrito_cantidad }}
+                    </span>
+                    {% endif %}
+                </a>
+                <div class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-xl z-30 hidden group-hover:block">
+                    <div class="p-4 max-h-64 overflow-y-auto">
+                        {% if carrito_productos %}
+                        {% for producto in carrito_productos %}
+                        <div class="flex items-center mb-2 last:mb-0">
+                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                                class="w-8 h-8 rounded mr-3 object-cover border">
+                            <div class="flex-1">
+                                <span class="text-sm font-medium text-gray-800">{{ producto.nombre }}</span>
+                                <span class="block text-xs text-gray-500">x{{ producto.cantidad }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <a href="{% url 'carrito' %}"
+                            class="block mt-3 text-blue-600 hover:underline text-center font-semibold">Ver carrito</a>
+                        {% else %}
+                        <p class="text-gray-500 text-sm text-center">No hay productos en el carrito.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if request.user.is_authenticated %}
+            <span class="font-semibold text-gray-800 mr-4">
+                Hola! <strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong>
+            </span>
+            <div class="relative inline-block">
                 <button id="user-menu-button" class="flex items-center focus:outline-none">
-                    <div class="rounded-full overflow-hidden h-8 w-8 mr-2">
+                    <div class="rounded-full overflow-hidden h-8 w-8">
                         <img src="{% if request.user.profile.imagen %}{{ request.user.profile.imagen.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}"
                             alt="Avatar de {{ request.user.username }}" class="h-full w-full object-cover">
                     </div>
-                    <svg class="h-4 w-4 fill-current text-gray-600" viewBox="0 0 20 20">
+                    <svg class="h-4 w-4 fill-current text-gray-600 ml-2" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                             clip-rule="evenodd" />
                     </svg>
                 </button>
                 <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
-                    <a href="{% url 'perfil' %}"
+                    <a href="{% url 'perfil_cliente' %}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Perfil</a>
-                    <a href="{% url 'pedidos' %}"
+                    <a href="{% url 'pedidos_cliente' %}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pedidos</a>
                     <a href="{% url 'historial_compras' %}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Historial de compras</a>

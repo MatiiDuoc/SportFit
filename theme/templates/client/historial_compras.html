@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Historial de Compras - SportFit
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-6">Historial de Compras</h1>
+    {% if compras %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-300 rounded-lg shadow text-sm">
+            <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                    <th class="px-4 py-2">N° Compra</th>
+                    <th class="px-4 py-2">Fecha</th>
+                    <th class="px-4 py-2">Total</th>
+                    <th class="px-4 py-2">Estado</th>
+                    <th class="px-4 py-2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compra in compras %}
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="px-4 py-2">{{ compra.id }}</td>
+                    <td class="px-4 py-2">{{ compra.fecha|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-2">${{ compra.total|floatformat:0 }}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 py-1 rounded bg-green-200 text-green-800">
+                            {{ compra.estado|default:"Completada" }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <a href="{% url 'detalle_compra' compra.id %}" class="text-blue-600 hover:underline">Ver
+                            Detalle</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-600 mt-8 text-center">No tienes compras registradas.</p>
+    {% endif %}
+</div>
+{% endblock %}

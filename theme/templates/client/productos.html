@@ -9,71 +9,30 @@ Productos - SportFit
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6 text-center">Nuestros Productos</h1>
     <!-- Filtros -->
-    <form id="filtrosForm" method="get" class="flex flex-col gap-4 mb-8 bg-slate-100 p-4 rounded shadow md:flex-row md:items-center md:justify-between">
-        <div class="flex flex-col gap-2 w-full md:flex-row md:gap-4 md:w-auto">
-            <select class="border rounded-md p-2 w-full md:w-auto" name="categoria" id="categoriaSelect">
-                <option value="">Todas las categorías</option>
-                <option value="suplementos">Suplementos</option>
-                <option value="ropa">Ropa deportiva</option>
-                <option value="accesorios">Accesorios</option>
-                <!-- Más categorías dinámicamente si es posible -->
-            </select>
-            <select class="border rounded-md p-2 w-full md:w-auto" name="marca" id="marcaSelect">
-                <option value="">Todas las marcas</option>
-                <option value="nike">Nike</option>
-                <option value="adidas">Adidas</option>
-                <option value="underarmour">Under Armour</option>
-            </select>
-            <select class="border rounded-md p-2 w-full md:w-auto" name="ordenar" id="ordenarSelect">
-                <option value="">Ordenar por</option>
-                <option value="precio_asc">Precio: menor a mayor</option>
-                <option value="precio_desc">Precio: mayor a menor</option>
-                <option value="nombre_asc">Nombre: A-Z</option>
-                <option value="nombre_desc">Nombre: Z-A</option>
-            </select>
-        </div>
-        <div class="flex-1 flex justify-end w-full md:w-auto"></div>
-            <label for="busquedaInput" class="sr-only">Buscar productos</label>
-            <div class="relative w-full md:w-64">
-                <input
-                    type="text"
-                    id="busquedaInput"
-                    name="busqueda"
-                    placeholder="Buscar productos..."
-                    class="border rounded-md p-2 w-full pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    autocomplete="off"
-                />
-                <span class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-                    </svg>
-                </span>
-            </div>
-        </div>
-    </form>
+    {% include "components/filters-product.html" with marcas=marcas %}
     <!-- Cards de productos -->
     <div id="productosContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for producto in productos %}
-            {% include "components/card-product.html" with producto=producto %}
+        {% include "components/card-product.html" with producto=producto %}
         {% empty %}
-            <div class="col-span-full text-center text-gray-500">No se encontraron productos.</div>
+        <div class="col-span-full text-center text-gray-500">No se encontraron productos.</div>
         {% endfor %}
     </div>
     {% include "components/paginator.html" %}
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const filtrosForm = document.getElementById('filtrosForm');
-    filtrosForm.addEventListener('change', function () {
-        filtrosForm.submit();
-    });
-    document.getElementById('busquedaInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function () {
+        const filtrosForm = document.getElementById('filtrosForm');
+        filtrosForm.addEventListener('change', function () {
             filtrosForm.submit();
-        }
+        });
+        document.getElementById('busquedaInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filtrosForm.submit();
+            }
+        });
     });
-});
 </script>
 {% endblock %}

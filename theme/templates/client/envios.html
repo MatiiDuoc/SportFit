@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Mis Envíos - SportFit
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-6">Mis Envíos</h1>
+    {% if envios %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-300 rounded-lg shadow text-sm">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700">
+                        <th class="px-4 py-2">N° Envío</th>
+                        <th class="px-4 py-2">Fecha</th>
+                        <th class="px-4 py-2">Dirección</th>
+                        <th class="px-4 py-2">Estado</th>
+                        <th class="px-4 py-2">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for envio in envios %}
+                    <tr class="hover:bg-gray-50 border-b">
+                        <td class="px-4 py-2">{{ envio.id }}</td>
+                        <td class="px-4 py-2">{{ envio.fecha|date:"d/m/Y H:i" }}</td>
+                        <td class="px-4 py-2">{{ envio.direccion }}</td>
+                        <td class="px-4 py-2">
+                            <span class="px-2 py-1 rounded 
+                                {% if envio.estado == 'En camino' %}bg-yellow-200 text-yellow-800
+                                {% elif envio.estado == 'Entregado' %}bg-green-200 text-green-800
+                                {% else %}bg-gray-200 text-gray-800{% endif %}">
+                                {{ envio.estado }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2">
+                            <a href="{% url 'detalle_envio' envio.id %}" class="text-blue-600 hover:underline">Ver Detalle</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-gray-600 mt-8 text-center">No tienes envíos registrados.</p>
+    {% endif %}
+</div>
+{% endblock %}

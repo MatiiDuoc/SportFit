@@ -1,3 +1,90 @@
-<!-- Plantilla para la vista 'editar_producto' -->
-<h1>Editar_producto</h1>
-<p>Esta es una plantilla generada automáticamente.</p>
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+{# No incluir footer en admin #}
+{% endblock %}
+
+{% block content %}
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+{% if messages %}
+<div id="popup-message" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+    {% for message in messages %}
+    <div
+        class="flex items-center gap-2 px-6 py-4 rounded-lg bg-green-500 text-white shadow-lg font-semibold animate-fade-in">
+        <i class="fa-solid fa-circle-check text-2xl"></i>
+        <span>{{ message }}</span>
+        <button onclick="document.getElementById('popup-message').style.display='none';"
+            class="ml-4 text-white hover:text-gray-200 text-xl">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    setTimeout(function () {
+        var popup = document.getElementById('popup-message');
+        if (popup) popup.style.display = 'none';
+    }, 3500);
+</script>
+<style>
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.5s;
+    }
+</style>
+{% endif %}
+
+<div
+    class="max-w-2xl w-full mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-xl mt-10 sm:mt-20 sm:ml-64 border border-gray-200">
+    <h1 class="text-2xl sm:text-3xl font-extrabold mb-8 sm:mb-10 text-gray-900 text-center">Editar Producto</h1>
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-6">
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-base font-semibold text-gray-700 mb-2">
+                    {% if field.name == 'id_categoria' %}Categoría
+                    {% elif field.name == 'id_marca' %}Marca
+                    {% else %}{{ field.label }}{% endif %}
+                    {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                {{ field|add_class:"block w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm focus:border-yellow-500 focus:ring focus:ring-yellow-200 focus:ring-opacity-50 transition" }}
+                {% if field.help_text %}
+                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                {% endif %}
+                {% for error in field.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+            <button type="submit"
+                class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-8 py-3 rounded-lg shadow transition text-lg">
+                Guardar Cambios
+            </button>
+            <a href="{% url 'productos' %}"
+                class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-lg shadow transition text-lg text-center">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

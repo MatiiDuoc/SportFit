@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Medio de Pago - Checkout{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Línea de tiempo de pasos (igual que antes) -->
+    <div class="flex justify-center items-center mb-12">
+        <!-- ... timeline ... -->
+        <div class="flex flex-col items-center">
+            <div
+                class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">
+                1</div>
+            <span class="mt-2 text-green-500 font-semibold text-sm sm:text-base">Tus datos</span>
+        </div>
+        <div class="flex-grow border-t-2 border-green-500 mx-4"></div>
+        <div class="flex flex-col items-center">
+            <div
+                class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">
+                2</div>
+            <span class="mt-2 text-green-500 font-semibold text-sm sm:text-base">Forma de entrega</span>
+        </div>
+        <div class="flex-grow border-t-2 border-green-500 mx-4"></div>
+        <div class="flex flex-col items-center">
+            <div
+                class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
+                3</div>
+            <span class="mt-2 text-blue-500 font-semibold text-sm sm:text-base">Medio de pago</span>
+        </div>
+        <div class="flex-grow border-t-2 border-blue-300 mx-4"></div>
+        <div class="flex flex-col items-center">
+            <div
+                class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg">
+                4</div>
+            <span class="mt-2 text-gray-500 text-sm sm:text-base">Confirmación</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Formulario de pago -->
+        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <!-- Aquí van los datos del usuario -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-2 text-gray-700">Tus datos</h3>
+                <div class="text-gray-700">
+                    <div><span class="font-semibold">Nombre:</span> {{ usuario.nombre }}</div>
+                    <div><span class="font-semibold">Rut:</span> {{ usuario.rut }}</div>
+                    <div><span class="font-semibold">Correo:</span> {{ usuario.correo }}</div>
+                    <div><span class="font-semibold">Teléfono:</span> {{ usuario.telefono }}</div>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Medio de pago</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Selecciona un método de pago:</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center">
+                            <input type="radio" name="metodo_pago" value="webpay" class="mr-2" required>
+                            Webpay (Tarjeta de crédito/débito)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="metodo_pago" value="paypal" class="mr-2" required>
+                            PayPal
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="metodo_pago" value="transferencia" class="mr-2" required>
+                            Transferencia bancaria
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="metodo_pago" value="efectivo" class="mr-2" required>
+                            Pago en efectivo (al retirar o recibir)
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Detalles adicionales (opcional):</label>
+                    <input type="text" name="detalles_pago" class="w-full border rounded px-3 py-2"
+                        placeholder="Ej: Banco, número de transacción, etc.">
+                </div>
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'checkout_entrega' %}"
+                        class="text-blue-500 hover:text-blue-700 font-semibold text-sm sm:text-base">&lt; Volver</a>
+                    <button type="submit"
+                        class="bg-lime-500 hover:bg-lime-600 text-black font-bold px-8 py-3 rounded-md transition duration-300 ease-in-out text-base">
+                        Continuar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resumen del carrito (igual que antes) -->
+        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit">
+            <h3 class="text-xl font-bold mb-6 text-gray-800">Resumen</h3>
+            <div class="border-b border-gray-200 pb-4 mb-4">
+                {% for producto in carrito_productos %}
+                <div class="flex items-center mb-2">
+                    <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}" class="w-16 h-16 rounded-md mr-4">
+                    <div class="flex-grow">
+                        <p class="text-gray-700 font-medium">{{ producto.nombre }}</p>
+                        <p class="text-gray-500 text-sm">Cantidad: {{ producto.cantidad }}</p>
+                    </div>
+                    <p class="text-gray-700 font-semibold">${{ producto.subtotal|floatformat:0 }}</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-sm">No hay productos en el carrito.</p>
+                {% endfor %}
+            </div>
+            <div class="flex justify-between items-center text-lg font-bold text-gray-800 mb-2">
+                <span>Cantidad</span>
+                <span>{{ carrito_cantidad }}</span>
+            </div>
+            <div class="flex justify-between items-center text-lg font-bold text-gray-800">
+                <span>Total</span>
+                <span>${{ carrito_total|floatformat:0 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

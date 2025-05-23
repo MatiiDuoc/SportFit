@@ -1,12 +1,18 @@
+{% if page_obj.has_other_pages %}
 <div class="mt-4 flex justify-end items-center space-x-2 my-5">
     <span class="text-gray-700 font-medium">Páginas:</span>
-    <a href="?page=prev" class="px-3 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">
-        &#8592;
-    </a>
-    <a href="?page=1" class="px-4 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">1</a>
-    <a href="?page=2" class="px-4 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">2</a>
-    <a href="?page=3" class="px-4 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">3</a>
-    <a href="?page=next" class="px-3 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">
-        &#8594;
-    </a>
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">&#8592;</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <span class="px-4 py-2 bg-blue-500 text-white rounded-full">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="px-4 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 bg-gray-200 text-black hover:bg-blue-400 rounded-full hover:text-white">&#8594;</a>
+    {% endif %}
 </div>
+{% endif %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Mis Direcciones - SportFit
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-6">Mis Direcciones</h1>
+    {% if direcciones %}
+    <div class="space-y-4">
+        {% for direccion in direcciones %}
+        <div class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="font-semibold text-gray-800">{{ direccion.direccion }}</p>
+                <p class="text-gray-600 text-sm">
+                    {{ direccion.id_comuna.descripcion }}, {{ direccion.id_comuna.id_region.descripcion }}
+                </p>
+                <p class="text-gray-600 text-sm">Teléfono: {{ direccion.telefono }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-600 mt-8 text-center">No tienes direcciones registradas.</p>
+    {% endif %}
+</div>
+{% endblock %}

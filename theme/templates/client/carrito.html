@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Mi Carrito - SportFit
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-6">Mi Carrito</h1>
+    {% if carrito_productos %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                    <th class="px-4 py-2 text-left">Producto</th>
+                    <th class="px-4 py-2 text-center">Cantidad</th>
+                    <th class="px-4 py-2 text-right">Precio</th>
+                    <th class="px-4 py-2 text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in carrito_productos %}
+                <tr class="border-b">
+                    <td class="px-4 py-2 flex items-center gap-3">
+                        <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}"
+                            class="w-12 h-12 object-cover rounded border">
+                        <span>{{ producto.nombre }}</span>
+                    </td>
+                    <td class="px-4 py-2 text-center">{{ producto.cantidad }}</td>
+                    <td class="px-4 py-2 text-right">${{ producto.precio|floatformat:0 }}</td>
+                    <td class="px-4 py-2 text-right">${{ producto.subtotal|floatformat:0 }}</td>
+                    <td class="px-4 py-2 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <form action="{% url 'disminuir_cantidad_carrito' producto.id_detalle_carrito %}"
+                                method="post" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" title="Disminuir cantidad"
+                                    class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-full w-7 h-7 flex items-center justify-center font-bold transition">
+                                    &minus;
+                                </button>
+                            </form>
+                            <span class="mx-1 font-medium">{{ producto.cantidad }}</span>
+                            <form action="{% url 'eliminar_del_carrito' producto.id_detalle_carrito %}" method="post"
+                                class="inline">
+                                {% csrf_token %}
+                                <button type="submit" title="Eliminar producto"
+                                    class="bg-red-100 hover:bg-red-200 text-red-700 rounded-full w-7 h-7 flex items-center justify-center font-bold transition">
+                                    &times;
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-right mt-6">
+            <span class="text-lg font-bold">Total: ${{ carrito_total|floatformat:0 }}</span>
+        </div>
+        <div class="flex justify-end mt-4">
+            <a href="{% url 'checkout_usuario' %}"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors duration-200">
+                Continuar compra
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-gray-600 mt-8 text-center">No hay productos en tu carrito.</p>
+    {% endif %}
+</div>
+{% endblock %}

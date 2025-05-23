@@ -16,28 +16,45 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from SportFit_app import views  # Cambiado para importar desde SportFit_app
+from SportFit_app import views  
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('__reload__/', include('django_browser_reload.urls')),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('historial_compras/', views.historial_compras, name='historial_compras'),
+    path('carrito/', views.carrito, name='carrito'),
+    path('carrito/agregar/<int:producto_id>/', views.agregar_al_carrito, name='agregar_al_carrito'),
+    path('carrito/eliminar/<int:detalle_id>/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
+    path('carrito/disminuir/<int:detalle_id>/', views.disminuir_cantidad_carrito, name='disminuir_cantidad_carrito'),
+    path('envios/', views.envios, name='envios'),
+    path('direcciones/', views.direcciones, name='direcciones'),
     path('registro/', views.registro, name='registro'),
+    path('pedidos/', views.pedidos, name='pedidos'),
     path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     #========================
     #CLIENTE
     #========================
     path('productos/', views.productos_cliente, name='productos_cliente'),
+    path('pedidos/', views.pedidos_cliente, name='pedidos_cliente'),
+    path('perfil/', views.perfil_cliente, name='perfil_cliente'),
+    path('perfil/editar/', views.editar_perfil_cliente, name='editar_perfil_cliente'),
+    path('client/checkout/usuario/', views.checkout_usuario, name='checkout_usuario'),
+    path('client/checkout/entrega/', views.checkout_entrega, name='checkout_entrega'),
+    path('client/checkout/pago/', views.checkout_pago, name='checkout_pago'),
+    path('client/checkout/confirmacion/', views.checkout_confirmacion, name='checkout_confirmacion'),
+    path('checkout/exito/', views.compra_exitosa, name='compra_exitosa'),
+    path('webpay/iniciar/<int:pedido_id>/', views.iniciar_pago_webpay, name='iniciar_pago_webpay'),
+    path('webpay/retorno/', views.webpay_retorno, name='webpay_retorno'),
+    path('paypal/iniciar/', views.iniciar_pago_paypal, name='iniciar_pago_paypal'),
+    path('paypal/retorno/', views.paypal_retorno, name='paypal_retorno'),
+    path('paypal/cancelado/', views.paypal_cancelado, name='paypal_cancelado'),
     #ENTRENADOR
     #========================
     #NUTRICIONISTA
-    #========================
-
-
-
-    
+    #========================    
     #========================
     #ADMINISTRADOR
     #========================
@@ -84,7 +101,7 @@ urlpatterns = [
     path('admin/perfil/editar_telefono/', views.editar_telefono, name='editar_telefono'),
     path('admin/perfil/editar_email/', views.editar_email, name='editar_email'),
     # dashboard
-    path('dashboard/dashboard_administrador/', views.dashboard_administrador, name='dashboard_administrador'),
+    path('admin/dashboard/', views.dashboard_administrador, name='dashboard_administrador'),
     # reportes
     path('admin/reportes/', views.reportes, name='reportes'),
     path('admin/', admin.site.urls),

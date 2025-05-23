@@ -22,86 +22,119 @@
                 <img src="{% static 'images/logo/SportFit@1x.png' %}" alt="Logo SportFit" class="h-10">
             </div>
             <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Crear Cuenta</h2>
-            <form id="registroForm" method="POST" class="space-y-4" novalidate>
+            <form id="registroForm" method="POST" class="space-y-4" novalidate autocomplete="off">
                 {% csrf_token %}
                 <div>
                     <label for="rut" class="block text-sm font-medium text-gray-700">Rut</label>
                     <input type="text" name="rut" id="rut" class="mt-1 block w-full border rounded-md p-3"
-                        placeholder="12.345.678-9">
+                        placeholder="12.345.678-9" required autocomplete="off" aria-invalid="false">
                     <p class="text-xs text-red-500 mt-1 hidden" id="rutError"></p>
                 </div>
                 <div class="flex flex-col md:flex-row gap-6">
                     <div class="w-full">
                         <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input type="text" name="nombre" id="nombre" class="mt-1 block w-full border rounded-md p-3">
+                        <input type="text" name="nombre" id="nombre" class="mt-1 block w-full border rounded-md p-3"
+                            required autocomplete="given-name" aria-invalid="false">
                         <p class="text-xs text-red-500 mt-1 hidden" id="nombreError"></p>
                     </div>
                     <div class="w-full">
                         <label for="apellido" class="block text-sm font-medium text-gray-700">Apellido</label>
-                        <input type="text" name="apellido" id="apellido"
-                            class="mt-1 block w-full border rounded-md p-3">
+                        <input type="text" name="apellido" id="apellido" class="mt-1 block w-full border rounded-md p-3"
+                            required autocomplete="family-name" aria-invalid="false">
                         <p class="text-xs text-red-500 mt-1 hidden" id="apellidoError"></p>
                     </div>
                 </div>
                 <div>
-                    <label for="genero" class="block text-sm font-medium text-gray-700">Género</label>
-                    <select name="genero" id="genero" class="mt-1 block w-full border rounded-md p-3">
-                        <option value="">Selecciona una opción</option>
-                        <option value="masculino">Masculino</option>
-                        <option value="femenino">Femenino</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                    <p class="text-xs text-red-500 mt-1 hidden" id="generoError"></p>
-                </div>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="w-full">
-                        <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input type="tel" name="telefono" id="telefono" class="mt-1 block w-full border rounded-md p-3"
-                            placeholder="9XXXXXXXX">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="telefonoError"></p>
+                    <div>
+                        <label for="region" class="block text-sm font-medium text-gray-700">Región</label>
+                        <select name="id_region" id="region" required class="mt-1 block w-full border rounded-md p-3">
+                            <option value="">Seleccione una región</option>
+                            {% for region in regiones %}
+                            <option value="{{ region.id_region }}">{{ region.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="regionError"></p>
                     </div>
-                    <div class="w-full">
-                        <label for="telefono_emergencia" class="block text-sm font-medium text-gray-700">Teléfono de
-                            emergencia</label>
-                        <input type="tel" name="telefono_emergencia" id="telefono_emergencia"
-                            class="mt-1 block w-full border rounded-md p-3" placeholder="9XXXXXXXX">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="telefonoEmergenciaError"></p>
+                    <div>
+                        <label for="comuna" class="block text-sm font-medium text-gray-700">Comuna</label>
+                        <select name="id_comuna" id="comuna" required class="mt-1 block w-full border rounded-md p-3">
+                            <option value="">Seleccione comuna</option>
+                            {% for comuna in comunas %}
+                            <option value="{{ comuna.id_comuna }}">{{ comuna.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="comunaError"></p>
                     </div>
-                </div>
-                <div>
-                    <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de
-                        Nacimiento</label>
-                    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
-                        class="mt-1 block w-full border rounded-md p-3">
-                    <p class="text-xs text-red-500 mt-1 hidden" id="fechaNacimientoError"></p>
-                </div>
-                <div>
-                    <label for="correo_electronico" class="block text-sm font-medium text-gray-700">Correo
-                        electrónico</label>
-                    <input type="email" name="correo_electronico" id="correo_electronico"
-                        class="mt-1 block w-full border rounded-md p-3">
-                    <p class="text-xs text-red-500 mt-1 hidden" id="correoError"></p>
-                </div>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="w-full">
-                        <label for="contrasena" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input type="password" name="contrasena" id="contrasena"
-                            class="mt-1 block w-full border rounded-md p-3">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="contrasenaError"></p>
+                    <div>
+                        <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                        <input type="text" name="direccion" id="direccion"
+                            class="mt-1 block w-full border rounded-md p-3" placeholder="Dirección" required
+                            autocomplete="address-line1" aria-invalid="false">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="direccionError"></p>
                     </div>
-                    <div class="w-full">
-                        <label for="confirmar_contrasena" class="block text-sm font-medium text-gray-700">Confirmar
-                            contraseña</label>
-                        <input type="password" name="confirmar_contrasena" id="confirmar_contrasena"
-                            class="mt-1 block w-full border rounded-md p-3">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="confirmarContrasenaError"></p>
+                    <div>
+                        <label for="genero" class="block text-sm font-medium text-gray-700">Género</label>
+                        <select name="id_genero" id="genero" required class="mt-1 block w-full border rounded-md p-3">
+                            <option value="">Seleccione género</option>
+                            {% for genero in generos %}
+                            <option value="{{ genero.id_genero }}">{{ genero.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="generoError"></p>
                     </div>
-                </div>
-                <hr>
-                <button type="submit"
-                    class="w-full  text-black hover:bg-lime-300 bg-lime-400 transition shadow-lg font-bold py-3 px-4 rounded mt-4 text-lg">
-                    Registrarse
-                </button>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full">
+                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                            <input type="tel" name="telefono" id="telefono"
+                                class="mt-1 block w-full border rounded-md p-3" placeholder="9XXXXXXXX" required
+                                autocomplete="tel" aria-invalid="false">
+                            <p class="text-xs text-red-500 mt-1 hidden" id="telefonoError"></p>
+                        </div>
+                        <div class="w-full">
+                            <label for="telefono_emergencia" class="block text-sm font-medium text-gray-700">Teléfono de
+                                emergencia</label>
+                            <input type="tel" name="telefono_emergencia" id="telefono_emergencia"
+                                class="mt-1 block w-full border rounded-md p-3" placeholder="9XXXXXXXX" required
+                                autocomplete="tel" aria-invalid="false">
+                            <p class="text-xs text-red-500 mt-1 hidden" id="telefonoEmergenciaError"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de
+                            Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
+                            class="mt-1 block w-full border rounded-md p-3" required aria-invalid="false">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="fechaNacimientoError"></p>
+                    </div>
+                    <div>
+                        <label for="correo_electronico" class="block text-sm font-medium text-gray-700">Correo
+                            electrónico</label>
+                        <input type="email" name="correo_electronico" id="correo_electronico"
+                            class="mt-1 block w-full border rounded-md p-3" required autocomplete="email"
+                            aria-invalid="false">
+                        <p class="text-xs text-red-500 mt-1 hidden" id="correoError"></p>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full">
+                            <label for="contrasena" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                            <input type="password" name="contrasena" id="contrasena"
+                                class="mt-1 block w-full border rounded-md p-3" required autocomplete="new-password"
+                                aria-invalid="false">
+                            <p class="text-xs text-red-500 mt-1 hidden" id="contrasenaError"></p>
+                        </div>
+                        <div class="w-full">
+                            <label for="confirmar_contrasena" class="block text-sm font-medium text-gray-700">Confirmar
+                                Contraseña</label>
+                            <input type="password" name="confirmar_contrasena" id="confirmar_contrasena"
+                                class="mt-1 block w-full border rounded-md p-3" required autocomplete="new-password"
+                                aria-invalid="false">
+                            <p class="text-xs text-red-500 mt-1 hidden" id="confirmarContrasenaError"></p>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full  text-black hover:bg-lime-300 bg-lime-400 transition shadow-lg font-bold py-3 px-4 rounded mt-4 text-lg">
+                        Registrarse
+                    </button>
             </form>
             <p class="text-center text-sm text-gray-600 mt-6">
                 ¿Ya tienes una cuenta?
@@ -119,11 +152,15 @@
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = mensaje;
             errorElement.classList.remove('hidden');
+            const input = document.getElementById(elementId.replace('Error', ''));
+            if (input) input.setAttribute('aria-invalid', 'true');
         }
         function ocultarError(elementId) {
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = '';
             errorElement.classList.add('hidden');
+            const input = document.getElementById(elementId.replace('Error', ''));
+            if (input) input.setAttribute('aria-invalid', 'false');
         }
         function validarRut(rut) {
             rut = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
@@ -172,6 +209,22 @@
                 valid = false;
             } else {
                 ocultarError('generoError');
+            }
+            // Comuna
+            const comunaInput = document.getElementById('comuna');
+            if (comunaInput.value === "") {
+                mostrarError('comunaError', "Seleccione una comuna.");
+                valid = false;
+            } else {
+                ocultarError('comunaError');
+            }
+            // Region
+            const regionInput = document.getElementById('region');
+            if (regionInput.value === "") {
+                mostrarError('regionError', "Seleccione una region.");
+                valid = false;
+            } else {
+                ocultarError('regionError');
             }
             // Teléfono
             const telefonoInput = document.getElementById('telefono');

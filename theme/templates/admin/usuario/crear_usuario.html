@@ -1,3 +1,59 @@
-<!-- Plantilla para la vista 'crear_usuario' -->
-<h1>Crear_usuario</h1>
-<p>Esta es una plantilla generada automáticamente.</p>
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}
+{# No incluir footer en admin #}
+{% endblock %}
+
+{% block content %}
+<!-- Botón para mostrar la sidebar en pantallas pequeñas -->
+<button id="toggleSidebar" class="sm:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded shadow-lg">
+    <i class="fa-solid fa-bars"></i>
+</button>
+<div class="flex justify-center items-center min-h-[60vh] px-2 ml-60 sm:ml-64">
+    <div class="w-full max-w-xl bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-200">
+        <h1 class="text-2xl sm:text-3xl font-extrabold mb-8 text-gray-900 text-center">Crear Usuario</h1>
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 gap-6">
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-base font-semibold text-gray-700 mb-2">
+                        {{ field.label }}{% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {% if field.name == 'foto' %}
+                    <div class="flex items
+                        <input type=" file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                        class="block w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition"
+                        accept="image/*">
+                        <img id="preview" src="#" alt="Vista previa" class="hidden w-16 h-16 ml-4 rounded-full">
+                    </div>
+                    {% else %}
+                    {{ field|add_class:"block w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition" }}
+                    {% endif %}
+                    {% if field.help_text %}
+                    <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+                <button type="submit"
+                    class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg shadow transition text-lg">
+                    Crear Usuario
+                </button>
+                <a href="{% url 'usuarios' %}"
+                    class="w-full sm:w-auto bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg shadow transition text-lg text-center">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
