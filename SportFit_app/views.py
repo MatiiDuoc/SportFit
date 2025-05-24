@@ -21,6 +21,11 @@ from transbank.common.options import WebpayOptions
 import paypalrestsdk
 from dotenv import load_dotenv
 import os
+from rest_framework import serializers
+from rest_framework import viewsets, permissions
+from .serializers import PedidoSerializer
+
+
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -64,7 +69,23 @@ class EditarPerfilClienteForm(forms.ModelForm):
 
 
 
+class PedidoViewSet(viewsets.ModelViewSet):
+    queryset = Pedido.objects.all()
+    serializer_class = PedidoSerializer
+    permission_classes = []
+    # Puedes filtrar solo los pedidos con despacho a domicilio
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        tipo_entrega = self.request.query_params.get('tipo_entrega')
+        if tipo_entrega:
+            queryset = queryset.filter(tipo_entrega=tipo_entrega)
+        return queryset
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def about(request):
+    # Vista para la página "Acerca de"
+    return render(request, 'about.html')
 
 # Create your views here.
 #----------------------------------
@@ -75,16 +96,35 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 @login_required
 def pedidos_cliente(request):
     usuario = Usuario.objects.get(correo=request.user.email)
-    pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    pedidos = Pedido.objects.filter(
+        usuario=usuario,
+        estado__in=['en_curso', 'procesando']
+    ).order_by('-fecha_creacion')
     return render(request, 'client/pedidos.html', {'pedidos': pedidos})
+
 def home(request):
     return render(request, 'home.html')
+@login_required
 def historial_compras(request):
-    # Vista para el historial de compras
-    return render(request, 'client/historial_compras.html')
+    usuario = Usuario.objects.get(correo=request.user.email)
+    compras = Pedido.objects.filter(
+        usuario=usuario,
+        estado__in=['entregado', 'cancelado']
+    ).order_by('-fecha_creacion')
+    return render(request, 'client/historial_compras.html', {'compras': compras})
+@login_required
+def detalle_compra(request, compra_id):
+    usuario = Usuario.objects.get(correo=request.user.email)
+    compra = get_object_or_404(Pedido, id_pedido=compra_id, usuario=usuario)
+    return render(request, 'client/detalle_compra.html', {'compra': compra})
+@login_required
 def envios(request):
-    # Vista para los envíos
-    return render(request, 'client/envios.html')
+    usuario = Usuario.objects.get(correo=request.user.email)
+    pedidos_enviados = Pedido.objects.filter(
+        usuario=usuario,
+        estado='enviado'
+    ).order_by('-fecha_creacion')
+    return render(request, 'client/envios.html', {'pedidos': pedidos_enviados})
 @login_required
 def carrito(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -340,7 +380,7 @@ def webpay_retorno(request):
             tipo_entrega=entrega.get('tipo_entrega', ''),
             metodo_pago=pago.get('metodo_pago', ''),
             total=carrito_total,
-            estado='pagado'
+            estado='En curso'
         )
         # Finaliza el carrito
         detalles.delete()
@@ -399,34 +439,61 @@ def paypal_retorno(request):
     payer_id = request.GET.get('PayerID')
     payment = paypalrestsdk.Payment.find(payment_id)
     if payment.execute({"payer_id": payer_id}):
-        # Lógica igual que en webpay_retorno
         usuario = Usuario.objects.filter(correo=request.user.email).first()
         entrega = request.session.get('checkout_entrega', {})
         pago = request.session.get('checkout_pago', {})
         carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
         detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
         carrito_total = sum(d.precio * d.cantidad for d in detalles)
-        # Crea el pedido solo si el pago fue exitoso
-        pedido = Pedido.objects.create(
+
+        # Verifica si ya existe un pedido para este carrito y usuario con estado pagado
+        pedido_existente = Pedido.objects.filter(
             usuario=usuario,
             carrito=carrito,
-            direccion_entrega=entrega.get('direccion_entrega', ''),
-            tipo_entrega=entrega.get('tipo_entrega', ''),
-            metodo_pago=pago.get('metodo_pago', ''),
-            total=carrito_total,
             estado='pagado'
-        )
-        # Finaliza el carrito
-        detalles.delete()
-        carrito.estado = 'finalizado'
-        carrito.save()
-        # Limpia la sesión
-        request.session.pop('checkout_usuario', None)
-        request.session.pop('checkout_entrega', None)
-        request.session.pop('checkout_pago', None)
+        ).first()
+
+        if not pedido_existente:
+            pedido = Pedido.objects.create(
+                usuario=usuario,
+                carrito=carrito,
+                direccion_entrega=entrega.get('direccion_entrega', ''),
+                tipo_entrega=entrega.get('tipo_entrega', ''),
+                metodo_pago=pago.get('metodo_pago', ''),
+                total=carrito_total,
+                estado='procesando'
+            )
+            # Finaliza el carrito
+            detalles.delete()
+            carrito.estado = 'finalizado'
+            carrito.save()
+            # Limpia la sesión
+            request.session.pop('checkout_usuario', None)
+            request.session.pop('checkout_entrega', None)
+            request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa')
     else:
         return render(request, 'paypal/error.html', {'error': payment.error})
+
+@login_required
+def agregar_observacion(request, compra_id):
+    if request.method == 'POST':
+        usuario = Usuario.objects.get(correo=request.user.email)
+        compra = get_object_or_404(Pedido, id_pedido=compra_id, usuario=usuario)
+        observacion = request.POST.get('observacion', '').strip()
+        if observacion:
+            compra.observacion = observacion
+            compra.save()
+            messages.success(request, "¡Comentario guardado!")
+        else:
+            messages.error(request, "El comentario no puede estar vacío.")
+    return redirect('historial_compras')
+
+@login_required
+def detalle_pedido(request, pedido_id):
+    usuario = Usuario.objects.get(correo=request.user.email)
+    pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
+    return render(request, 'client/detalle_pedido.html', {'pedido': pedido})
 
 def paypal_cancelado(request):
     return render(request, 'paypal/cancelado.html')
@@ -543,6 +610,7 @@ def login_view(request):
             else:
                 return redirect('home')
         else:
+            messages.error(request, "Correo o contraseña incorrectos.")
             return render(request, 'login/login.html', {'error': 'Credenciales inválidas'})
     return render(request, 'login/login.html')
 
@@ -743,15 +811,16 @@ def eliminar_producto(request, id):
     messages.success(request, "¡Producto eliminado exitosamente!")
     return redirect('productos')
 
-
 def crear_producto(request):
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
+        print("Datos recibidos:", form.data)
         if form.is_valid():
             try:
                 form.save()
                 return redirect('productos')
-            except IntegrityError:
+            except IntegrityError as e:
+                print("Error de integridad:", e)
                 form.add_error(None, "Ya existe un producto con ese identificador o valor único.")
     else:
         form = ProductoForm()

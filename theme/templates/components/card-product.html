@@ -1,16 +1,15 @@
 {% load static %}
 <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 duration-200">
     <div class="relative">
-        <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}"
+        <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'images/no_image/no_image.jpg' %}{% endif %}"
+            alt="{{ producto.nombre_producto }}"
             class="w-full h-52 object-cover object-center transition-opacity duration-200 hover:opacity-90">
-
         {% if producto.destacado %}
         <span class="absolute top-3 left-3 bg-yellow-500 text-white text-xs font-bold rounded-full px-3 py-1 shadow">
             Destacado
         </span>
         {% endif %}
     </div>
-
     <div class="p-5 flex flex-col gap-3">
         <h3 class="text-lg font-bold text-gray-900 truncate" title="{{ producto.nombre_producto }}">
             {{ producto.nombre_producto }}
@@ -36,8 +35,10 @@
                 {% csrf_token %}
                 <button type="submit"
                     class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-5 h-5 mr-2 -mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-5 h-5 mr-2 -mt-1" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
                     </svg>
                     Agregar al Carrito
                 </button>

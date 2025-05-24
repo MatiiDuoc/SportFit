@@ -32,7 +32,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = 'django-insecure-5j)j#gmw5=+svi=@9^+1e8cq!b4_gfdj0&7x!!gw%0-9x4gezu'
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -54,6 +55,8 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
     'widget_tweaks',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -121,8 +124,13 @@ DATABASES = {
 }
 
 WEBPAY_COMMERCE_CODE = os.getenv('WEBPAY_COMMERCE_CODE', '597055555532')
-WEBPAY_ENVIRONMENT = os.getenv('WEBPAY_ENVIRONMENT', 'TEST')
+WEBPAY_ENVIRONMENT = os.getenv('WEBPAY_ENVIRONMENT', 'X')
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

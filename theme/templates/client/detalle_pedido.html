@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto mt-12 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <h1 class="text-3xl font-extrabold mb-6 text-gray-800 text-center">
+        Detalle del Pedido <span class="text-blue-600">#{{ pedido.id_pedido }}</span>
+    </h1>
+    <ul class="divide-y divide-gray-100">
+        <li class="py-3 flex justify-between">
+            <span class="font-semibold text-gray-600">Fecha:</span>
+            <span class="text-gray-800">{{ pedido.fecha_creacion }}</span>
+        </li>
+        <li class="py-3 flex justify-between">
+            <span class="font-semibold text-gray-600">Estado:</span>
+            <span>
+                <span class="inline-block px-2 py-1 rounded-full text-xs font-medium
+                    {% if pedido.estado == 'Entregado' %}
+                        bg-green-100 text-green-700
+                    {% elif pedido.estado == 'Pendiente' %}
+                        bg-yellow-100 text-yellow-700
+                    {% else %}
+                        bg-gray-100 text-gray-700
+                    {% endif %}
+                ">
+                    {{ pedido.estado }}
+                </span>
+            </span>
+        </li>
+        <li class="py-3 flex justify-between">
+            <span class="font-semibold text-gray-600">Total:</span>
+            <span class="text-gray-800 font-bold">${{ pedido.total }}</span>
+        </li>
+        <!-- Agrega más detalles según tu modelo -->
+    </ul>
+</div>
+{% endblock %}

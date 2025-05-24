@@ -17,23 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from SportFit_app import views  
+from django.conf.urls.static import static
+from django.conf import settings
+from rest_framework import routers
+from SportFit_app.views import PedidoViewSet
+
+router = routers.DefaultRouter()
+router.register(r'api/pedidos', PedidoViewSet)
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('__reload__/', include('django_browser_reload.urls')),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('historial_compras/', views.historial_compras, name='historial_compras'),
-    path('carrito/', views.carrito, name='carrito'),
-    path('carrito/agregar/<int:producto_id>/', views.agregar_al_carrito, name='agregar_al_carrito'),
-    path('carrito/eliminar/<int:detalle_id>/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
-    path('carrito/disminuir/<int:detalle_id>/', views.disminuir_cantidad_carrito, name='disminuir_cantidad_carrito'),
-    path('envios/', views.envios, name='envios'),
-    path('direcciones/', views.direcciones, name='direcciones'),
     path('registro/', views.registro, name='registro'),
-    path('pedidos/', views.pedidos, name='pedidos'),
     path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
+    path('about/', views.about, name='about'),
     #========================
     #CLIENTE
     #========================
@@ -51,6 +51,17 @@ urlpatterns = [
     path('paypal/iniciar/', views.iniciar_pago_paypal, name='iniciar_pago_paypal'),
     path('paypal/retorno/', views.paypal_retorno, name='paypal_retorno'),
     path('paypal/cancelado/', views.paypal_cancelado, name='paypal_cancelado'),
+    path('historial_compras/', views.historial_compras, name='historial_compras'),
+    path('carrito/', views.carrito, name='carrito'),
+    path('carrito/agregar/<int:producto_id>/', views.agregar_al_carrito, name='agregar_al_carrito'),
+    path('carrito/eliminar/<int:detalle_id>/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
+    path('carrito/disminuir/<int:detalle_id>/', views.disminuir_cantidad_carrito, name='disminuir_cantidad_carrito'),
+    path('envios/', views.envios, name='envios'),
+    path('direcciones/', views.direcciones, name='direcciones'),
+    path('pedidos/', views.pedidos, name='pedidos'),
+    path('pedidos/detalle/<int:pedido_id>/', views.detalle_pedido, name='detalle_pedido'),
+    path('compras/observacion/<int:compra_id>/', views.agregar_observacion, name='agregar_observacion'),
+    path('compras/detalle/<int:compra_id>/', views.detalle_compra, name='detalle_compra'),
     #ENTRENADOR
     #========================
     #NUTRICIONISTA
@@ -107,4 +118,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
 
-]
+] + router.urls
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

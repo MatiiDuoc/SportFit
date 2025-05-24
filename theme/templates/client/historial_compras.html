@@ -17,14 +17,15 @@ Historial de Compras - SportFit
                     <th class="px-4 py-2">Fecha</th>
                     <th class="px-4 py-2">Total</th>
                     <th class="px-4 py-2">Estado</th>
+                    <th class="px-4 py-2">Comentario</th>
                     <th class="px-4 py-2">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for compra in compras %}
                 <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-4 py-2">{{ compra.id }}</td>
-                    <td class="px-4 py-2">{{ compra.fecha|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-2">{{ compra.id_pedido }}</td>
+                    <td class="px-4 py-2">{{ compra.fecha_creacion|date:"d/m/Y H:i" }}</td>
                     <td class="px-4 py-2">${{ compra.total|floatformat:0 }}</td>
                     <td class="px-4 py-2">
                         <span class="px-2 py-1 rounded bg-green-200 text-green-800">
@@ -32,7 +33,22 @@ Historial de Compras - SportFit
                         </span>
                     </td>
                     <td class="px-4 py-2">
-                        <a href="{% url 'detalle_compra' compra.id %}" class="text-blue-600 hover:underline">Ver
+                        {% if compra.observacion %}
+                        <span class="text-gray-700">{{ compra.observacion }}</span>
+                        {% else %}
+                        {% if compra.id_pedido %}
+                        <form method="post" action="{% url 'agregar_observacion' compra.id_pedido %}">
+                            {% csrf_token %}
+                            <input type="text" name="observacion" class="border rounded px-2 py-1 text-xs"
+                                placeholder="Deja tu comentario">
+                            <button type="submit"
+                                class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs">Guardar</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        <a href="{% url 'detalle_compra' compra.id_pedido %}" class="text-blue-600 hover:underline">Ver
                             Detalle</a>
                     </td>
                 </tr>

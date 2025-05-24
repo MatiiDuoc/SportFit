@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 32px;">
+    <h1 style="font-size: 2rem; color: #2d3748; margin-bottom: 24px; text-align: center;">
+        Detalle de la Compra #{{ compra.id_pedido }}
+    </h1>
+    <ul style="list-style: none; padding: 0; font-size: 1.1rem; color: #444;">
+        <li style="margin-bottom: 12px;">
+            <strong>Fecha:</strong> {{ compra.fecha_creacion }}
+        </li>
+        <li style="margin-bottom: 12px;">
+            <strong>Total:</strong> <span style="color: #38a169;">${{ compra.total }}</span>
+        </li>
+        <li style="margin-bottom: 12px;">
+            <strong>Estado:</strong> {{ compra.estado }}
+        </li>
+        <li style="margin-bottom: 12px;">
+            <strong>Comentario:</strong> {{ compra.observacion }}
+        </li>
+    </ul>
+</div>
+{% endblock %}

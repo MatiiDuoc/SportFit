@@ -119,7 +119,7 @@ class Producto(models.Model):
     descripcion = models.CharField(max_length=50)
     stock = models.IntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    imagen = models.CharField(max_length=100)
+    imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
     id_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, db_column='id_categoria')
     id_marca = models.ForeignKey(Marca, on_delete=models.CASCADE, db_column='id_marca')
 
