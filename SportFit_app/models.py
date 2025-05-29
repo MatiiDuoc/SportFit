@@ -39,7 +39,7 @@ class PlanEntrenamiento(models.Model):
     descripcion = models.CharField(max_length=50)
     duracion_semana = models.IntegerField()
     nivel = models.CharField(max_length=50)
-
+    id_entrenador = models.ForeignKey('Usuario', on_delete=models.CASCADE, db_column='id_entrenador', limit_choices_to={'tipo_usuario': 'entrenador'}, null=True, blank=True)
     class Meta:
         db_table = 'plan_entrenamiento'
 
@@ -88,6 +88,8 @@ class Usuario(models.Model):
     id_comuna = models.ForeignKey(Comuna, on_delete=models.CASCADE, db_column='id_comuna')
     id_genero = models.ForeignKey(Genero, on_delete=models.CASCADE, db_column='id_genero')
     tipo_usuario = models.CharField(max_length=20, choices=TIPO_USUARIO_CHOICES, default='cliente')
+    id_entrenador = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='clientes')
+    id_plan = models.ForeignKey(PlanEntrenamiento, null=True, blank=True, on_delete=models.SET_NULL)
     # otros campos...
 
     class Meta:

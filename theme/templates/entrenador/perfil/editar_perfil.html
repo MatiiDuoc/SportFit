@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Editar Perfil del Entrenador{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gray-100 ml-60">
+    {% include "components/navbar_entrenador.html" %}
+    <main class="flex-1 max-w-2xl mx-auto py-10 px-4">
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-3xl font-bold mb-6 text-gray-800">Editar Perfil</h1>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="id_nombre" class="block font-medium mb-1">Nombre</label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <div class="text-red-600 text-sm">{{ form.nombre.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_apellido" class="block font-medium mb-1">Apellido</label>
+                    {{ form.apellido }}
+                    {% if form.apellido.errors %}
+                        <div class="text-red-600 text-sm">{{ form.apellido.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_correo" class="block font-medium mb-1">Correo</label>
+                    {{ form.correo }}
+                    {% if form.correo.errors %}
+                        <div class="text-red-600 text-sm">{{ form.correo.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_telefono" class="block font-medium mb-1">Teléfono</label>
+                    {{ form.telefono }}
+                    {% if form.telefono.errors %}
+                        <div class="text-red-600 text-sm">{{ form.telefono.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_direccion" class="block font-medium mb-1">Dirección</label>
+                    {{ form.direccion }}
+                    {% if form.direccion.errors %}
+                        <div class="text-red-600 text-sm">{{ form.direccion.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_id_comuna" class="block font-medium mb-1">Comuna</label>
+                    {{ form.id_comuna }}
+                    {% if form.id_comuna.errors %}
+                        <div class="text-red-600 text-sm">{{ form.id_comuna.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_id_genero" class="block font-medium mb-1">Género</label>
+                    {{ form.id_genero }}
+                    {% if form.id_genero.errors %}
+                        <div class="text-red-600 text-sm">{{ form.id_genero.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    Guardar cambios
+                </button>
+                <a href="{% url 'perfil_entrenador' %}" class="ml-4 text-gray-600 hover:underline">Cancelar</a>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Contratar Plan de Entrenamiento{% endblock %}
+{% block content %}
+<div class="flex min-h-screen bg-gray-100">
+    <main class="flex-1 max-w-xl mx-auto py-10 px-4">
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6 text-gray-800">Contratar Plan de Entrenamiento</h1>
+            {% if not tiene_plan %}
+            <p class="mb-6 text-red-600 font-semibold">No tienes un plan de entrenamiento actualmente.</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="id_plan" class="block font-medium mb-1">Plan de entrenamiento</label>
+                    {{ form.id_plan }}
+                </div>
+                <div class="mb-4">
+                    <label for="id_entrenador" class="block font-medium mb-1">Entrenador</label>
+                    {{ form.id_entrenador }}
+                </div>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    Contratar nuevo plan
+                </button>
+            </form>
+            {% else %}
+            <p class="mb-6 text-green-600 font-semibold">Ya tienes un plan de entrenamiento activo.</p>
+            <div class="mb-4">
+                <strong>Plan actual:</strong>
+                <span class="text-gray-700">{{ usuario_extra.id_plan.nombre }}</span>
+            </div>
+            <div class="mb-4">
+                <strong>Entrenador asignado:</strong>
+                <span class="text-gray-700">
+                    {{ usuario_extra.id_entrenador.nombre }} {{ usuario_extra.id_entrenador.apellido }}
+                </span>
+            </div>
+            <div class="mb-2 text-gray-500 text-sm">
+                Si deseas cambiar de plan, contacta a un administrador o tu entrenador.
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="bg-green-100 text-green-700 p-2 rounded mb-4">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

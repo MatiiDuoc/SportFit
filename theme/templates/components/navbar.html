@@ -70,17 +70,13 @@
                 </div>
             </div>
             {% endif %}
-            
+
             {% if request.user.is_authenticated %}
             <span class="font-semibold text-gray-800 mr-4">
                 Hola! <strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong>
             </span>
             <div class="relative inline-block">
                 <button id="user-menu-button" class="flex items-center focus:outline-none">
-                    <div class="rounded-full overflow-hidden h-8 w-8">
-                        <img src="{% if request.user.profile.imagen %}{{ request.user.profile.imagen.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}"
-                            alt="Avatar de {{ request.user.username }}" class="h-full w-full object-cover">
-                    </div>
                     <svg class="h-4 w-4 fill-current text-gray-600 ml-2" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -98,6 +94,9 @@
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Envíos</a>
                     <a href="{% url 'direcciones' %}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Direcciones</a>
+                    <a href="{% url 'mis_planes' %}"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mis planes</a>
+
                     <hr class="border-gray-200">
                     <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100">Cerrar
                         sesión</a>

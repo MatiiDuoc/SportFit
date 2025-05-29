@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Rutinas{% endblock %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gray-100 ml-60">
+    <!-- Sidebar -->
+    {% include "components/navbar_entrenador.html" %}
+
+    <main class="flex-1 max-w-4xl mx-auto py-10 px-4">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Mis Rutinas</h1>
+
+        <!-- Mensajes -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-3 rounded {{ message.tags }} bg-green-100 text-green-800 mb-2">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- Botón para crear nueva rutina -->
+        <div class="mb-6">
+            <a href="{% url 'crear_rutina' %}"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition font-semibold flex items-center gap-2 shadow">
+                <i class="fa-solid fa-plus"></i> Crear Nueva Rutina
+            </a>
+        </div>
+        <!-- Lista de rutinas -->
+        <section class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Rutinas creadas</h2>
+            {% if rutinas %}
+            <ul class="divide-y">
+                {% for rutina in rutinas %}
+                <li class="flex items-center justify-between py-3">
+                    <div>
+                        <span class="font-semibold text-gray-800">{{ rutina.nombre }}</span>
+                    </div>
+                    <div>
+                        <a href="{% url 'editar_rutina' rutina.id_plan %}"
+                            class="text-blue-600 hover:underline mr-2">Editar</a>
+                        <a href="#" class="text-red-600 hover:underline"
+                            onclick="abrirModalEliminar('{{ rutina.id_plan }}', '{{ rutina.nombre }}'); return false;">Eliminar</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-500">No tienes rutinas creadas aún.</p>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="modalEliminar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 hidden z-50 transition-all duration-300">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full relative animate-fade-in">
+        <button type="button" onclick="cerrarModalEliminar()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl focus:outline-none" aria-label="Cerrar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex flex-col items-center">
+            <div class="bg-red-100 rounded-full p-3 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">¿Eliminar rutina?</h2>
+            <p id="modalRutinaNombre" class="mb-6 text-center text-gray-600"></p>
+            <form id="formEliminarRutina" method="post" action="" class="w-full flex flex-col gap-2">
+                {% csrf_token %}
+                <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition">Eliminar</button>
+                <button type="button" onclick="cerrarModalEliminar()" class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in {
+    animation: fade-in 0.3s ease;
+}
+</style>
+
+<script>
+    function abrirModalEliminar(id, nombre) {
+        document.getElementById('modalEliminar').classList.remove('hidden');
+        document.getElementById('modalRutinaNombre').textContent = '¿Seguro que deseas eliminar la rutina "' + nombre + '"?';
+        document.getElementById('formEliminarRutina').action = '/rutinas/eliminar/' + id + '/';
+    }
+    function cerrarModalEliminar() {
+        document.getElementById('modalEliminar').classList.add('hidden');
+    }
+</script>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

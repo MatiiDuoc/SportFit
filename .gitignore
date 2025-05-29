@@ -1,34 +1,69 @@
-# Archivos de variables de entorno y secretos
-.env
-*.secret
-*.key
+# ...existing code...
 
-# Archivos de base de datos adicionales
-*.sqlite3
-*.db
+# Archivos de migraciones de Python compilados
+**/__pycache__/
+**/*.py[cod]
+*.pyo
 
-# Archivos de migraciones de Django (si no quieres compartirlas, aunque normalmente sí se comparten)
-# SportFit_app/migrations/__pycache__/
+# Archivos de logs
+*.log
+logs/
+log/
 
-# Archivos de dependencias de Python
-*.egg-info/
-dist/
-build/
+# Archivos de configuración de VSCode
+.vscode/
 
-# Archivos de salida de Selenium/ChromeDriver
-chromedriver.exe
-chromedriver.log
+# Archivos de configuración de JetBrains (PyCharm, etc.)
+.idea/
 
-# Archivos de medios subidos por usuarios
-media/
-uploads/
+# Archivos de sistema
+.DS_Store
+Thumbs.db
 
-# Archivos de dependencias de Node.js
+# Archivos de coverage y pruebas
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+
+# Archivos de entorno virtual
+venv/
+.env/
+.venv/
+ENV/
+env/
+.virtualenvs/
+
+# Archivos de Tailwind CSS y otros generados por build
+theme/static_src/node_modules/
+theme/static_src/.cache/
+theme/static_src/dist/
+theme/static_src/build/
+
+# Archivos de lock de Node.js
+package-lock.json
+yarn.lock
+
+# Archivos de backup de editores
+*~
+*.swp
+*.bak
+*.tmp
+
+# Archivos de base de datos de Oracle exportados
+*.dmp
+*.log
+*.sql
+
+# Archivos de configuración de entorno de desarrollo
+*.local
+# Archivos de configuración de entorno de producción
+*.prod
+# node_modules
 node_modules/
-
-# Archivos de cache de pip
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Archivos de configuración de Oracle (si usas tnsnames.ora, etc.)
-*.ora
+#media
+media/
+#env
+.env

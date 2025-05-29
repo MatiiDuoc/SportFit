@@ -1,0 +1,28 @@
+<aside class="fixed left-0 top-0 w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-lg">
+    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+        <h2 class="text-2xl font-extrabold text-blue-800">Panel Entrenador</h2>
+        <p class="text-xs text-gray-500 mt-1">Bienvenido, {{ user.first_name|default:user.username }}</p>
+    </div>
+    <nav class="flex-1 px-4 py-6 space-y-1">
+        <a href="{% url 'dashboard_entrenador' %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors font-medium">
+            <i class="fa-solid fa-house"></i> Inicio
+        </a>
+        <a href="{% url 'rutinas_entrenador' %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors font-medium">
+            <i class="fa-solid fa-dumbbell"></i> Rutinas
+        </a>
+        <a href="{% url 'clientes_entrenador' %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors font-medium">
+            <i class="fa-solid fa-users"></i> Mis alumnos
+        </a>
+        <a href="{% url 'perfil_entrenador' %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors font-medium">
+            <i class="fa-solid fa-user"></i> Mi perfil
+        </a>
+        <a href="{% url 'logout' %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-red-100 hover:text-red-700 transition-colors font-medium">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+        </a>
+    </nav>
+</aside>

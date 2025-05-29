@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Mis alumnos{% endblock %}
+{% block navbar %}
+{% endblock %}
+{% block content %}
+<div class="flex min-h-screen bg-gray-100 ml-60">
+    {% include "components/navbar_entrenador.html" %}
+    <main class="flex-1 max-w-2xl mx-auto py-10 px-4">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Mis Alumnos</h1>
+
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-3 rounded {{ message.tags }} bg-green-100 text-green-800 mb-2">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <section class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Alumnos asignados</h2>
+            {% if alumnos %}
+            <ul class="divide-y">
+                {% for alumno in alumnos %}
+                <li class="flex items-center justify-between py-3">
+                    <div>
+                        <span class="font-semibold text-gray-800">{{ alumno.nombre }} {{ alumno.apellidos }}</span>
+                    </div>
+                    <div>
+                        <a href="{% url 'ver_alumno' alumno.id %}" class="text-blue-600 hover:underline mr-2">Ver Detalles</a>
+                        <a href="{% url 'editar_alumno' alumno.id %}" class="text-blue-600 hover:underline mr-2">Editar</a>
+                        <a href="#" class="text-red-600 hover:underline"
+                           onclick="abrirModalEliminar('{{ alumno.id }}', '{{ alumno.nombre }}'); return false;">Eliminar</a>   
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-500">No tienes alumnos asignados aún.</p>
+            {% endif %}
+    </main>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

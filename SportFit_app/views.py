@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.db import transaction
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
@@ -24,7 +25,8 @@ import os
 from rest_framework import serializers
 from rest_framework import viewsets, permissions
 from .serializers import PedidoSerializer
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 class ProductoForm(forms.ModelForm):
@@ -37,6 +39,7 @@ class ProductoForm(forms.ModelForm):
         }
 
 class UsuarioForm(forms.ModelForm):
+    contrasena = forms.CharField(widget=forms.PasswordInput, required=True)
     class Meta:
         model = Usuario
         fields = '__all__'
@@ -56,7 +59,7 @@ class ProveedorForm(forms.ModelForm):
         model = Proveedor
         fields = '__all__'
         
-class EditarPerfilClienteForm(forms.ModelForm):
+class RutinaForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = [
@@ -67,7 +70,10 @@ class EditarPerfilClienteForm(forms.ModelForm):
             'tel_emergencia'
         ]
 
-
+class PlanEntrenamientoForm(forms.ModelForm):
+    class Meta:
+        model = PlanEntrenamiento
+        exclude = ['id_entrenador']
 
 class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all()
@@ -81,29 +87,47 @@ class PedidoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(tipo_entrega=tipo_entrega)
         return queryset
 
+class ContratarPlanForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['id_plan', 'id_entrenador']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo mostrar usuarios que sean entrenadores
+        self.fields['id_entrenador'].queryset = Usuario.objects.filter(tipo_usuario='entrenador')
+            
+# forms.py
+class EditarPerfilEntrenadorForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['nombre', 'apellido', 'correo', 'telefono', 'direccion', 'id_comuna', 'id_genero']
+        
+class EditarPerfilClienteForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['nombre', 'apellido', 'correo', 'telefono', 'direccion', 'id_comuna', 'id_genero']
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def about(request):
     # Vista para la página "Acerca de"
     return render(request, 'about.html')
-
-# Create your views here.
 #----------------------------------
 # Cliente
 #----------------------------------
-# views.py
-
 @login_required
 def pedidos_cliente(request):
-    usuario = Usuario.objects.get(correo=request.user.email)
-    pedidos = Pedido.objects.filter(
-        usuario=usuario,
-        estado__in=['en_curso', 'procesando']
-    ).order_by('-fecha_creacion')
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
     return render(request, 'client/pedidos.html', {'pedidos': pedidos})
 
+
 def home(request):
-    return render(request, 'home.html')
+    productos_comentados = Pedido.objects.exclude(observacion__isnull=True).exclude(observacion__exact='').order_by('-fecha_creacion')
+    return render(request, 'home.html', {
+        'productos_comentados': productos_comentados,
+    })
 @login_required
 def historial_compras(request):
     usuario = Usuario.objects.get(correo=request.user.email)
@@ -111,7 +135,26 @@ def historial_compras(request):
         usuario=usuario,
         estado__in=['entregado', 'cancelado']
     ).order_by('-fecha_creacion')
-    return render(request, 'client/historial_compras.html', {'compras': compras})
+
+    compras_con_productos = []
+    for compra in compras:
+        detalles = DetalleCarrito.objects.filter(id_carrito=compra.carrito).select_related('id_producto')
+        detalles_con_comentario = []
+        for detalle in detalles:
+            comentario_usuario = ComentarioProdAten.objects.filter(
+                id_producto=detalle.id_producto,
+                id_usuario=usuario
+            ).first()
+            detalles_con_comentario.append({
+                'detalle': detalle,
+                'comentario_usuario': comentario_usuario
+            })
+        compras_con_productos.append({
+            'compra': compra,
+            'detalles': detalles_con_comentario,
+        })
+
+    return render(request, 'client/historial_compras.html', {'compras_con_productos': compras_con_productos})
 @login_required
 def detalle_compra(request, compra_id):
     usuario = Usuario.objects.get(correo=request.user.email)
@@ -212,6 +255,13 @@ def disminuir_cantidad_carrito(request, detalle_id):
     return redirect('carrito')
     
 @login_required
+def aumentar_cantidad_carrito(request, detalle_id):
+    detalle = get_object_or_404(DetalleCarrito, pk=detalle_id)
+    detalle.cantidad += 1
+    detalle.save()
+    return redirect('carrito')
+
+@login_required
 def direcciones(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     return render(request, 'client/direcciones.html', {
@@ -259,6 +309,7 @@ def checkout_pago(request):
     })
 
 
+
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -287,20 +338,40 @@ def checkout_confirmacion(request):
         carrito_cantidad += detalle.cantidad
         carrito_total += subtotal
 
+    # --------- DESCUENTO SABORLATINO ---------
+    descuento = 0
+    DESCUENTO_SABORLATINO = 0.10  # 10%
+    def es_usuario_saborlatino(rut_usuario):
+        usuarios_api = obtener_usuarios_api()
+        ruts_saborlatino = {u['numero_rut'] for u in usuarios_api}
+        return rut_usuario in ruts_saborlatino
+
+    if usuario and es_usuario_saborlatino(usuario.rut):
+        descuento = carrito_total * DESCUENTO_SABORLATINO
+        carrito_total -= descuento
+    # -----------------------------------------
+
     if request.method == 'POST':
-        metodo = pago.get('metodo_pago', '')
-        if metodo == 'webpay':
-            return redirect('iniciar_pago_webpay', pedido_id=carrito.id_carrito)
-        elif metodo == 'paypal':
-            return redirect('iniciar_pago_paypal')
-        else:
-            # Otros métodos de pago (ej: transferencia, efectivo)
+        # Validar stock antes de procesar la compra
+        for detalle in detalles:
+            producto = detalle.id_producto
+            if producto.stock < detalle.cantidad:
+                messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+                return redirect('carrito')
+
+        # Descontar stock y guardar pedido de forma atómica
+        with transaction.atomic():
+            for detalle in detalles:
+                producto = detalle.id_producto
+                producto.stock -= detalle.cantidad
+                producto.save()
+
             pedido = Pedido.objects.create(
                 usuario=usuario,
                 carrito=carrito,
                 direccion_entrega=entrega.get('direccion_entrega', ''),
                 tipo_entrega=entrega.get('tipo_entrega', ''),
-                metodo_pago=metodo,
+                metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
                 estado='pendiente'
             )
@@ -310,8 +381,8 @@ def checkout_confirmacion(request):
             request.session.pop('checkout_usuario', None)
             request.session.pop('checkout_entrega', None)
             request.session.pop('checkout_pago', None)
-            return redirect('compra_exitosa')
-
+        return redirect('compra_exitosa')
+    es_usuario_saborlatino = usuario and es_usuario_saborlatino(usuario.rut)
     return render(request, 'client/checkout/confirmacion.html', {
         'usuario': usuario,
         'entrega': entrega,
@@ -319,7 +390,10 @@ def checkout_confirmacion(request):
         'carrito_productos': carrito_productos,
         'carrito_cantidad': carrito_cantidad,
         'carrito_total': carrito_total,
+        'descuento': descuento,
+        'es_saborlatino': es_usuario_saborlatino, 
     })
+
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
     print("===> Entrando a iniciar_pago_webpay")
@@ -360,41 +434,51 @@ def iniciar_pago_webpay(request, pedido_id):
     except Exception as e:
         print("===> ERROR en Webpay:", e)
         return render(request, 'webpay/error.html', {'error': str(e)})
-
 def webpay_retorno(request):
     token = request.POST.get('token_ws')
     response = Transaction.commit(token)
     if response['status'] == 'AUTHORIZED':
-        # Recupera datos de sesión
         usuario = Usuario.objects.filter(correo=request.user.email).first()
         entrega = request.session.get('checkout_entrega', {})
         pago = request.session.get('checkout_pago', {})
         carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
         detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
         carrito_total = sum(d.precio * d.cantidad for d in detalles)
-        # Crea el pedido solo si el pago fue exitoso
-        pedido = Pedido.objects.create(
-            usuario=usuario,
-            carrito=carrito,
-            direccion_entrega=entrega.get('direccion_entrega', ''),
-            tipo_entrega=entrega.get('tipo_entrega', ''),
-            metodo_pago=pago.get('metodo_pago', ''),
-            total=carrito_total,
-            estado='En curso'
-        )
-        # Finaliza el carrito
-        detalles.delete()
-        carrito.estado = 'finalizado'
-        carrito.save()
-        # Limpia la sesión
-        request.session.pop('checkout_usuario', None)
-        request.session.pop('checkout_entrega', None)
-        request.session.pop('checkout_pago', None)
+
+        # Validar stock antes de crear el pedido
+        for detalle in detalles:
+            producto = detalle.id_producto
+            if producto.stock < detalle.cantidad:
+                messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+                return redirect('carrito')
+
+        # Descontar stock de forma atómica
+        from django.db import transaction
+        with transaction.atomic():
+            for detalle in detalles:
+                producto = detalle.id_producto
+                producto.stock -= detalle.cantidad
+                producto.save()
+
+            pedido = Pedido.objects.create(
+                usuario=usuario,
+                carrito=carrito,
+                direccion_entrega=entrega.get('direccion_entrega', ''),
+                tipo_entrega=entrega.get('tipo_entrega', ''),
+                metodo_pago=pago.get('metodo_pago', ''),
+                total=carrito_total,
+                estado='En curso'
+            )
+            detalles.delete()
+            carrito.estado = 'finalizado'
+            carrito.save()
+            request.session.pop('checkout_usuario', None)
+            request.session.pop('checkout_entrega', None)
+            request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa')
     else:
         error_msg = response.get('status', 'Pago no autorizado')
         return render(request, 'webpay/error.html', {'error': error_msg})
-
 #paypal
 paypalrestsdk.configure({
     "mode": "sandbox",
@@ -433,7 +517,6 @@ def iniciar_pago_paypal(request):
                 return redirect(link.href)
     else:
         return render(request, 'paypal/error.html', {'error': payment.error})
-
 def paypal_retorno(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
@@ -446,31 +529,43 @@ def paypal_retorno(request):
         detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
         carrito_total = sum(d.precio * d.cantidad for d in detalles)
 
-        # Verifica si ya existe un pedido para este carrito y usuario con estado pagado
-        pedido_existente = Pedido.objects.filter(
-            usuario=usuario,
-            carrito=carrito,
-            estado='pagado'
-        ).first()
+        # Validar stock antes de crear el pedido
+        for detalle in detalles:
+            producto = detalle.id_producto
+            if producto.stock < detalle.cantidad:
+                messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+                return redirect('carrito')
 
-        if not pedido_existente:
-            pedido = Pedido.objects.create(
+        # Descontar stock de forma atómica
+        from django.db import transaction
+        with transaction.atomic():
+            for detalle in detalles:
+                producto = detalle.id_producto
+                producto.stock -= detalle.cantidad
+                producto.save()
+
+            pedido_existente = Pedido.objects.filter(
                 usuario=usuario,
                 carrito=carrito,
-                direccion_entrega=entrega.get('direccion_entrega', ''),
-                tipo_entrega=entrega.get('tipo_entrega', ''),
-                metodo_pago=pago.get('metodo_pago', ''),
-                total=carrito_total,
-                estado='procesando'
-            )
-            # Finaliza el carrito
-            detalles.delete()
-            carrito.estado = 'finalizado'
-            carrito.save()
-            # Limpia la sesión
-            request.session.pop('checkout_usuario', None)
-            request.session.pop('checkout_entrega', None)
-            request.session.pop('checkout_pago', None)
+                estado='pagado'
+            ).first()
+
+            if not pedido_existente:
+                pedido = Pedido.objects.create(
+                    usuario=usuario,
+                    carrito=carrito,
+                    direccion_entrega=entrega.get('direccion_entrega', ''),
+                    tipo_entrega=entrega.get('tipo_entrega', ''),
+                    metodo_pago=pago.get('metodo_pago', ''),
+                    total=carrito_total,
+                    estado='procesando'
+                )
+                detalles.delete()
+                carrito.estado = 'finalizado'
+                carrito.save()
+                request.session.pop('checkout_usuario', None)
+                request.session.pop('checkout_entrega', None)
+                request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa')
     else:
         return render(request, 'paypal/error.html', {'error': payment.error})
@@ -490,6 +585,23 @@ def agregar_observacion(request, compra_id):
     return redirect('historial_compras')
 
 @login_required
+def agregar_comentario_producto(request, producto_id):
+    if request.method == 'POST':
+        usuario = Usuario.objects.filter(correo=request.user.email).first()
+        producto = get_object_or_404(Producto, pk=producto_id)
+        comentario = request.POST.get('comentario', '').strip()
+        if comentario:
+            ComentarioProdAten.objects.create(
+                id_producto=producto,
+                id_usuario=usuario,
+                comentario=comentario
+            )
+            messages.success(request, "¡Comentario guardado!")
+        else:
+            messages.error(request, "El comentario no puede estar vacío.")
+        return redirect('detalle_producto', producto_id=producto_id)
+
+@login_required
 def detalle_pedido(request, pedido_id):
     usuario = Usuario.objects.get(correo=request.user.email)
     pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
@@ -502,9 +614,11 @@ def compra_exitosa(request):
     return render(request, 'client/checkout/compra_exitosa.html')
 
 
+@login_required
 def pedidos(request):
-    # Vista para los pedidos
-    return render(request, 'client/pedidos.html')
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    return render(request, 'client/pedidos.html', {'pedidos': pedidos})
 # -------------------- Login --------------------
 def logout_view(request):
     # Vista para cerrar sesión
@@ -605,10 +719,18 @@ def login_view(request):
             login(request, user)
             if user.is_superuser:
                 return redirect('dashboard_administrador')
-            elif hasattr(user, 'cliente'):
-                return redirect('productos_cliente')
-            else:
-                return redirect('home')
+            # Buscar el usuario extra
+            usuario_extra = Usuario.objects.filter(correo=user.email).first()
+            if usuario_extra:
+                if usuario_extra.tipo_usuario == 'entrenador':
+                    return redirect('dashboard_entrenador')
+                elif usuario_extra.tipo_usuario == 'vendedor':
+                    return redirect('dashboard_vendedor')
+                elif usuario_extra.tipo_usuario == 'cliente':
+                    return redirect('productos_cliente')
+                elif usuario_extra.tipo_usuario == 'administrador':
+                    return redirect('dashboard_administrador')
+            return redirect('home')
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
             return render(request, 'login/login.html', {'error': 'Credenciales inválidas'})
@@ -649,6 +771,36 @@ def productos_cliente(request):
     })
 
 
+@login_required
+def contratar_plan(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'cliente':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    # Validar si ya tiene un plan asignado
+    tiene_plan = usuario.id_plan is not None
+    if tiene_plan:
+        messages.info(request, "Ya tienes un plan de entrenamiento activo.")
+        return render(request, 'client/plan.html', {
+            'tiene_plan': True,
+            'form': None,
+            'usuario_extra': usuario,  # <-- así lo pasas
+        })
+
+    if request.method == 'POST':
+        form = ContratarPlanForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "¡Plan contratado correctamente!")
+            return redirect('plan_cliente')
+    else:
+        form = ContratarPlanForm(instance=usuario)
+
+    return render(request, 'client/plan.html', {
+        'tiene_plan': False,
+        'form': form,
+    })
 #----------------------------------
 # Administrador
 #----------------------------------
@@ -686,12 +838,23 @@ def obtener_usuarios_api():
     driver.quit()
     return usuarios
 
+def es_usuario_saborlatino(rut_usuario):
+    # Llama a la API y obtén la lista de usuarios SaborLatino
+    usuarios_api = obtener_usuarios_api()  # Esta función ya la tienes
+    ruts_saborlatino = {u['numero_rut'] for u in usuarios_api}
+    return rut_usuario in ruts_saborlatino
+
 def usuarios(request):
     try:
         usuarios_api = obtener_usuarios_api()
     except Exception as e:
         print("ERROR:", e)
         usuarios_api = []
+
+    # Admins del modelo personalizado
+    admins = Usuario.objects.filter(tipo_usuario='administrador')
+    # Primer superusuario del modelo auth_user
+    primer_admin = User.objects.filter(is_superuser=True).order_by('date_joined').first()
     usuarios_locales = Usuario.objects.all()
     paginator = Paginator(usuarios_locales, 10)  # 10 por página
     page_number = request.GET.get('page')
@@ -699,6 +862,7 @@ def usuarios(request):
     context = {
         'usuarios_api': usuarios_api,
         'usuarios_locales': page_obj,  # paginados
+        'primer_admin': primer_admin,  # <-- lo agregas al contexto
     }
     return render(request, 'admin/usuario/usuarios.html', context)
 
@@ -724,15 +888,31 @@ def eliminar_usuario(request, id):
     return redirect('usuarios')
 
 def crear_usuario(request):
-    # Vista para crear un usuario
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
         if form.is_valid():
-            try:
-                form.save()
-                return redirect('usuarios')
-            except IntegrityError:
-                form.add_error(None, "Ya existe un usuario con ese identificador o valor único.")
+            correo = form.cleaned_data.get('correo')
+            nombre = form.cleaned_data.get('nombre')
+            apellido = form.cleaned_data.get('apellido')
+            contrasena = form.cleaned_data.get('contrasena')
+
+            # Crea el usuario en auth_user si no existe
+            if not User.objects.filter(username=correo).exists():
+                user = User.objects.create_user(
+                    username=correo,
+                    email=correo,
+                    password=contrasena,
+                    first_name=nombre,
+                    last_name=apellido
+                )
+            else:
+                user = User.objects.get(username=correo)
+
+            # Guarda el usuario en el modelo Usuario
+            usuario = form.save(commit=False)
+            usuario.contrasena = contrasena  # Opcional, si quieres guardar la contraseña en tu modelo (no recomendado)
+            usuario.save()
+            return redirect('usuarios')
     else:
         form = UsuarioForm()
     return render(request, 'admin/usuario/crear_usuario.html', {'form': form})
@@ -827,9 +1007,13 @@ def crear_producto(request):
     return render(request, 'admin/productos/crear_producto.html', {'form': form})
 
 # -------------------- Marcas --------------------
+@login_required
 def marcas(request):
-    # Vista para listar marcas
-    return render(request, 'admin/marcas/marcas.html', {})
+    if not request.user.is_superuser:
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+    marcas = Marca.objects.all()
+    return render(request, 'admin/marcas/marcas.html', {'marcas': marcas})
 
 def marca_detalle(request):
     # Vista para mostrar detalles de una marca
@@ -842,15 +1026,52 @@ def editar_marca(request):
 def eliminar_marca(request):
     # Vista para eliminar una marca
     return render(request, 'marcas/eliminar_marca.html', {})
+@csrf_exempt
+@login_required
+def crear_marca_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Acceso no autorizado.'})
+    if request.method == 'POST':
+        descripcion = request.POST.get('brand_description')
+        if descripcion:
+            if Marca.objects.filter(descripcion=descripcion).exists():
+                return JsonResponse({'success': False, 'error': 'Ya existe una marca con esa descripción.'})
+            Marca.objects.create(descripcion=descripcion)
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Todos los campos son obligatorios.'})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
 
-def crear_marca(request):
-    # Vista para crear una marca
-    return render(request, 'marcas/crear_marca.html', {})
+@csrf_exempt
+@login_required
+def editar_marca_ajax(request, id):
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Acceso no autorizado.'})
+    marca = get_object_or_404(Marca, id_marca=id)  # <-- aquí el cambio
+    if request.method == 'POST':
+        descripcion = request.POST.get('brand_description')
+        if descripcion:
+            marca.descripcion = descripcion
+            marca.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Todos los campos son obligatorios.'})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
+
+@login_required
+def eliminar_marca_ajax(request, id):
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Acceso no autorizado.'})
+    marca = get_object_or_404(Marca, id_marca=id)  # <-- aquí el cambio
+    if request.method == 'POST':
+        marca.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
 
 # -------------------- Proveedores --------------------
 def proveedores(request):
-    # Vista para listar proveedores
-    return render(request, 'admin/proveedores/proveedores.html', {})
+    proveedores = Proveedor.objects.all()
+    return render(request, 'admin/proveedores/proveedores.html', {'proveedores': proveedores})
 
 def proveedor_detalle(request):
     # Vista para mostrar detalles de un proveedor
@@ -867,6 +1088,51 @@ def eliminar_proveedor(request):
 def crear_proveedor(request):
     # Vista para crear un proveedor
     return render(request, 'proveedores/crear_proveedor.html', {})
+@csrf_exempt
+def crear_proveedor_ajax(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre_proveedor')
+        rut_proveedor = request.POST.get('rut_proveedor')
+        direccion = request.POST.get('direccion')
+        correo = request.POST.get('correo')
+        telefono = request.POST.get('telefono')
+        if nombre and direccion:
+            Proveedor.objects.create(
+                nombre_proveedor=nombre,
+                rut_proveedor=rut_proveedor,
+                direccion=direccion,
+                correo=correo,
+                telefono=telefono
+            )
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Todos los campos obligatorios.'})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
+
+@csrf_exempt
+def editar_proveedor_ajax(request, id):
+    proveedor = Proveedor.objects.filter(pk=id).first()
+    if not proveedor:
+        return JsonResponse({'success': False, 'error': 'Proveedor no encontrado.'})
+    if request.method == 'POST':
+        proveedor.nombre_proveedor = request.POST.get('nombre_proveedor')
+        proveedor.rut_proveedor = request.POST.get('rut_proveedor')
+        proveedor.direccion = request.POST.get('direccion')
+        proveedor.correo = request.POST.get('correo')
+        proveedor.telefono = request.POST.get('telefono')
+        proveedor.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
+
+@csrf_exempt
+def eliminar_proveedor_ajax(request, id):
+    proveedor = Proveedor.objects.filter(pk=id).first()
+    if not proveedor:
+        return JsonResponse({'success': False, 'error': 'Proveedor no encontrado.'})
+    if request.method == 'POST':
+        proveedor.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'})
 
 # -------------------- Órdenes --------------------
 def ordenes(request):
@@ -902,11 +1168,22 @@ def editar_perfil(request):
     return render(request, 'perfil/editar_perfil.html', {})
 
 def editar_perfil_cliente(request):
-    usuario = Usuario.objects.get(correo=request.user.email)
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "No se encontró el usuario.")
+        return redirect('home')
     if request.method == 'POST':
         form = EditarPerfilClienteForm(request.POST, instance=usuario)
         if form.is_valid():
             form.save()
+            # Sincronizar con auth.User
+            user = User.objects.filter(email=usuario.correo).first()
+            if user:
+                user.first_name = usuario.nombre
+                user.last_name = usuario.apellido
+                user.email = usuario.correo
+                user.username = usuario.correo  # si usas el correo como username
+                user.save()
             messages.success(request, "¡Perfil actualizado correctamente!")
             return redirect('editar_perfil_cliente')
         else:
@@ -934,3 +1211,265 @@ def editar_telefono(request):
 def editar_email(request):
     # Vista para editar el email del usuario
     return render(request, 'perfil/editar_email.html', {})
+
+# -------------------- Entrenadores --------------------
+@login_required
+def dashboard_entrenador(request):
+    # Datos de ejemplo (pueden venir de la base de datos)
+    ventas = [1200, 1900, 3000, 5000]
+    semanas = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
+
+    # Pasar los datos al contexto
+    context = {
+        'ventas': json.dumps(ventas),  # Convertir a JSON para usar en JavaScript
+        'semanas': json.dumps(semanas),
+    }
+    return render(request, 'entrenador/dashboard/dashboard.html', context)
+
+
+def clientes_entrenador(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    # Si tienes el campo id_entrenador:
+    # clientes = Usuario.objects.filter(id_entrenador=usuario)
+
+    # Si NO tienes el campo, muestra todos los clientes:
+    clientes = Usuario.objects.filter(tipo_usuario='cliente')
+    return render(request, 'entrenador/alumnos/alumnos_rutinas.html', {'clientes': clientes})
+
+
+def cliente_detalle_entrenador(request, cliente_id):
+    # Vista para mostrar detalles de un cliente del entrenador
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    return render(request, 'entrenador/clientes/cliente_detalle.html', {'cliente': cliente})
+
+@login_required
+def seguimiento_pedido(request, pedido_id):
+    usuario = Usuario.objects.get(correo=request.user.email)
+    pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
+    entrega = Entrega.objects.filter(id_entrega=pedido.venta.id_entrega_id).first() if pedido.venta and pedido.venta.id_entrega_id else None
+    seguimientos = SeguimientoEntrega.objects.filter(id_entrega=entrega).order_by('-fecha_actualizacion') if entrega else []
+    estados = ["Procesando", "Enviado", "En reparto", "Entregado"]
+    # Prepara una lista de los estados alcanzados
+    estados_alcanzados = list(seguimientos.values_list('estado_envio', flat=True)) if seguimientos else []
+    return render(request, 'client/seguimiento_pedido.html', {
+        'pedido': pedido,
+        'entrega': entrega,
+        'seguimientos': seguimientos,
+        'estados': estados,
+        'estados_alcanzados': estados_alcanzados,
+    })
+
+def crear_rutina(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = PlanEntrenamientoForm(request.POST)
+        if form.is_valid():
+            rutina = form.save(commit=False)
+            rutina.id_entrenador = usuario
+            rutina.save()
+            messages.success(request, "Rutina creada exitosamente.")
+            return redirect('rutinas_entrenador')
+        else:
+            print("Errores del formulario:", form.errors)
+            messages.error(request, "Corrige los errores del formulario.")
+    else:
+        form = PlanEntrenamientoForm()
+
+    return render(request, 'entrenador/rutinas/crear_rutina.html', {'form': form})
+
+def rutinas_entrenador(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    # Mostrar solo los planes creados por este entrenador
+    rutinas = PlanEntrenamiento.objects.filter(id_entrenador=usuario)
+
+    form = PlanEntrenamientoForm()
+
+    return render(request, 'entrenador/rutinas/rutinas.html', {
+        'rutinas': rutinas,
+        'form': form,
+    })
+
+def rutina_detalle_entrenador(request, rutina_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    rutina = get_object_or_404(PlanEntrenamiento, id_plan=rutina_id, id_entrenador=usuario)
+    return render(request, 'entrenador/rutinas/rutina_detalle.html', {
+        'rutina': rutina,
+    })
+
+
+def editar_rutina(request, rutina_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    rutina = get_object_or_404(PlanEntrenamiento, id_plan=rutina_id, id_entrenador=usuario)
+    if request.method == 'POST':
+        form = PlanEntrenamientoForm(request.POST, instance=rutina)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Rutina actualizada exitosamente.")
+            return redirect('rutinas_entrenador')
+    else:
+        form = PlanEntrenamientoForm(instance=rutina)
+
+    return render(request, 'entrenador/rutinas/editar_rutina.html', {'form': form, 'rutina': rutina})
+
+
+def eliminar_rutina(request, rutina_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    rutina = get_object_or_404(PlanEntrenamiento, id_plan=rutina_id, id_entrenador=usuario)
+    if request.method == 'POST':
+        rutina.delete()
+        messages.success(request, "Rutina eliminada exitosamente.")
+        return redirect('rutinas_entrenador')
+
+    # Muestra una página de confirmación antes de eliminar
+    return render(request, 'entrenador/rutinas/eliminar_rutina.html', {'rutina': rutina})
+
+def cliente_detalle_entrenador(request, cliente_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    rutinas = EntrenadorPlan.objects.filter(id_entrenador=usuario, id_usuario=cliente)
+    return render(request, 'entrenador/clientes/cliente_detalle.html', {
+        'cliente': cliente,
+        'rutinas': rutinas,
+    })
+
+
+def asignar_rutina_entrenador(request, cliente_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    if request.method == 'POST':
+        rutina_id = request.POST.get('rutina')
+        rutina = get_object_or_404(EntrenadorPlan, id_plan=rutina_id, id_entrenador=usuario)
+        cliente.rutina_asignada = rutina
+        cliente.save()
+        messages.success(request, "Rutina asignada exitosamente.")
+        return redirect('cliente_detalle_entrenador', cliente_id=cliente.id_usuario)
+
+    rutinas = EntrenadorPlan.objects.filter(id_entrenador=usuario)
+    return render(request, 'entrenador/clientes/asignar_rutina.html', {
+        'cliente': cliente,
+        'rutinas': rutinas,
+    })
+
+
+def eliminar_rutina_cliente(request, cliente_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    if request.method == 'POST':
+        cliente.rutina_asignada = None
+        cliente.save()
+        messages.success(request, "Rutina eliminada exitosamente.")
+        return redirect('cliente_detalle_entrenador', cliente_id=cliente.id_usuario)
+
+    return render(request, 'entrenador/clientes/eliminar_rutina.html', {'cliente': cliente})
+
+def perfil_entrenador(request):
+    entrenador = Usuario.objects.filter(correo=request.user.email, tipo_usuario='entrenador').first()
+    if not entrenador:
+        messages.error(request, "No se encontró el perfil del entrenador.")
+        return redirect('home')
+    return render(request, 'entrenador/perfil/perfil.html', {'entrenador': entrenador})
+
+def editar_perfil_entrenador(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = EditarPerfilEntrenadorForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect('perfil_entrenador')
+        else:
+            messages.error(request, "Corrige los errores del formulario.")
+    else:
+        form = EditarPerfilEntrenadorForm(instance=usuario)
+
+    return render(request, 'entrenador/perfil/editar_perfil.html', {'form': form})
+
+def editar_cliente_entrenador(request, id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=id, entrenador=usuario)
+    if request.method == 'POST':
+        cliente.nombre = request.POST.get('nombre', cliente.nombre)
+        cliente.apellido = request.POST.get('apellido', cliente.apellido)
+        cliente.telefono = request.POST.get('telefono', cliente.telefono)
+        cliente.direccion = request.POST.get('direccion', cliente.direccion)
+        cliente.save()
+        messages.success(request, "Cliente actualizado correctamente.")
+        return redirect('cliente_detalle_entrenador', id=cliente.id_usuario)
+
+    return render(request, 'entrenador/clientes/editar_cliente.html', {
+        'cliente': cliente,
+    })
+
+def eliminar_cliente_entrenador(request, id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=id, entrenador=usuario)
+    if request.method == 'POST':
+        cliente.delete()
+        messages.success(request, "Cliente eliminado correctamente.")
+        return redirect('clientes_entrenador')
+
+    return render(request, 'entrenador/clientes/eliminar_cliente.html', {'cliente': cliente})
+def rutina_detalle_entrenador(request, id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    rutina = get_object_or_404(EntrenadorPlan, id_plan=id, entrenador=usuario)
+    return render(request, 'entrenador/rutinas/rutina_detalle.html', {
+        'rutina': rutina,
+    })
+    

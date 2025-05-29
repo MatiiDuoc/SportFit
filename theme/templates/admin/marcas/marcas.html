@@ -24,31 +24,9 @@ Gestión de Marcas
     <div id="mainContent" class="flex-grow p-6 bg-gray-100 transition-all duration-300 ease-in-out sm:ml-64">
         <h1 class="text-2xl font-bold mb-6 text-gray-800">Marcas Asociadas</h1>
 
-        {% include "components/filter-marca.html" %}
-
         <div class="mt-2 mb-4 flex justify-end">
-            <button id="openModal" class="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-blue-600 transition"
-                onclick="showModal(
-            'userModal', 
-            'Agregar Marca',
-            `<form id='addBrandForm' onsubmit='return validateBrandForm()'>
-            <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                <div>
-                <label for='brand_name' class='block text-sm font-medium text-gray-700'>Nombre de la Marca</label>
-                <input type='text' id='brand_name' name='brand_name' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
-                </div>
-                <div>
-                <label for='brand_category' class='block text-sm font-medium text-gray-700'>Categoría</label>
-                <input type='text' id='brand_category' name='brand_category' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
-                </div>
-                <div class='sm:col-span-2'>
-                <label for='brand_description' class='block text-sm font-medium text-gray-700'>Descripción</label>
-                <textarea id='brand_description' name='brand_description' class='w-full border border-gray-300 rounded-lg p-2 mt-1' rows='3' required></textarea>
-                </div>
-            </div>
-            </form>`,
-            'Guardar'
-            )">
+            <button onclick="openAddBrandModal()"
+                class="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-blue-600 transition">
                 Agregar Marca nueva
             </button>
         </div>
@@ -58,124 +36,223 @@ Gestión de Marcas
             <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
                 <thead>
                     <tr class="bg-gray-200 text-gray-700">
-                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">ID Marca</th>
-                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Nombre</th>
-                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Categoría
-                        </th>
-                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Descripción
-                        </th>
-                        <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">Acciones</th>
+                        <th class="px-4 py-2 text-left font-semibold border-b border-gray-300">ID Marca</th>
+                        <th class="px-4 py-2 text-left font-semibold border-b border-gray-300">Descripción</th>
+                        <th class="px-4 py-2 text-left font-semibold border-b border-gray-300">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for marca in marcas %}
                     <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-4 py-2 text-gray-800">1</td>
-                        <td class="px-4 py-2 text-gray-800">Nike</td>
-                        <td class="px-4 py-2 text-gray-800">Vestimenta</td>
-                        <td class="px-4 py-2 text-gray-800">Marca líder en ropa deportiva.</td>
+                        <td class="px-4 py-2 text-gray-800">{{ marca.id_marca }}</td>
+                        <td class="px-4 py-2 text-gray-800">{{ marca.descripcion }}</td>
                         <td class="px-4 py-2 flex space-x-2">
-                            <!-- Botón Ver -->
-                            <button
-                                class="bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1"
-                                onclick="showModal('userModal', 'Ver Marca', `
-                                    <p><strong>ID Marca:</strong> 1</p>
-                                    <p><strong>Nombre:</strong> Nike</p>
-                                    <p><strong>Categoría:</strong> Vestimenta</p>
-                                    <p><strong>Descripción:</strong> Marca líder en ropa deportiva.</p>
-                                `, 'Cerrar')">
-                                <i class="fa-solid fa-eye"></i>
-                                <span>Ver</span>
+                            <!-- Editar -->
+                            <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition"
+                                onclick="openEditBrandModal('{{ marca.id_marca }}', '{{ marca.descripcion|escapejs }}')">
+                                <i class="fa-solid fa-pen"></i> Editar
                             </button>
-                            <!-- Botón Editar -->
-                            <button
-                                class="bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1"
-                                onclick="showModal('userModal', 'Editar Marca', `
-                                    <form id='editBrandForm' onsubmit='return validateBrandForm()'>
-                                        <div class='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                                            <div>
-                                                <label for='edit_brand_name' class='block text-sm font-medium text-gray-700'>Nombre de la Marca</label>
-                                                <input type='text' id='edit_brand_name' name='brand_name' value='Nike' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
-                                            </div>
-                                            <div>
-                                                <label for='edit_brand_category' class='block text-sm font-medium text-gray-700'>Categoría</label>
-                                                <input type='text' id='edit_brand_category' name='brand_category' value='Vestimenta' class='w-full border border-gray-300 rounded-lg p-2 mt-1' required>
-                                            </div>
-                                            <div class='sm:col-span-2'>
-                                                <label for='edit_brand_description' class='block text-sm font-medium text-gray-700'>Descripción</label>
-                                                <textarea id='edit_brand_description' name='brand_description' class='w-full border border-gray-300 rounded-lg p-2 mt-1' rows='3' required>Marca líder en ropa deportiva.</textarea>
-                                            </div>
-                                        </div>
-                                    </form>
-                                `, 'Guardar Cambios')">
-                                <i class="fa-solid fa-pen"></i>
-                                <span>Editar</span>
-                            </button>
-                            <!-- Botón Eliminar -->
-                            <button
-                                class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1"
-                                onclick="showModal('userModal', 'Eliminar Marca', `
-                                    <p>¿Estás seguro de que deseas eliminar esta marca?</p>
-                                    <p><strong>Nombre:</strong> Nike</p>
-                                    <p><strong>ID Marca:</strong> 1</p>
-                                `, 'Eliminar')">
-                                <i class="fa-solid fa-trash"></i>
-                                <span>Eliminar</span>
+                            <!-- Eliminar -->
+                            <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition"
+                                onclick="openDeleteBrandModal('{{ marca.id_marca }}', '{{ marca.descripcion|escapejs }}')">
+                                <i class="fa-solid fa-trash"></i> Eliminar
                             </button>
                         </td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-4 py-2 text-gray-800">2</td>
-                        <td class="px-4 py-2 text-gray-800">Adidas</td>
-                        <td class="px-4 py-2 text-gray-800">Vestimenta</td>
-                        <td class="px-4 py-2 text-gray-800">Ropa y calzado deportivo de alta calidad.</td>
-                        <td class="px-4 py-2 flex space-x-2">
-                            <button
-                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-eye"></i>
-                                <span>Ver</span>
-                            </button>
-                            <button
-                                class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-pen"></i>
-                                <span>Editar</span>
-                            </button>
-                            <button
-                                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-trash"></i>
-                                <span>Eliminar</span>
-                            </button>
-                        </td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-gray-500">No hay marcas registradas.</td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-4 py-2 text-gray-800">3</td>
-                        <td class="px-4 py-2 text-gray-800">Gatorade</td>
-                        <td class="px-4 py-2 text-gray-800">Alimentos</td>
-                        <td class="px-4 py-2 text-gray-800">Bebidas isotónicas para deportistas.</td>
-                        <td class="px-4 py-2 flex space-x-2">
-                            <button
-                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-eye"></i>
-                                <span>Ver</span>
-                            </button>
-                            <button
-                                class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-pen"></i>
-                                <span>Editar</span>
-                            </button>
-                            <button
-                                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center space-x-1">
-                                <i class="fa-solid fa-trash"></i>
-                                <span>Eliminar</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <!-- Más filas aquí -->
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-
-        <!-- Paginador estático -->
-        {% include "components/paginator.html" %}
     </div>
 </div>
+
+<!-- Modal Agregar/Editar Marca -->
+<div id="brandModal" class="hidden fixed inset-0  bg-opacity-40 flex items-center justify-center z-50 transition-all">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg relative animate-fade-in">
+        <button type="button" onclick="closeBrandModal()"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl focus:outline-none"
+            aria-label="Cerrar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 id="brandModalTitle" class="text-2xl font-bold mb-6 text-gray-800"></h2>
+        <form id="brandForm" autocomplete="off">
+            <input type="hidden" id="brand_id" name="brand_id">
+            <div class="mb-4">
+                <label for="brand_description" class="block text-gray-700 font-semibold mb-1">Descripción</label>
+                <textarea id="brand_description" name="brand_description"
+                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none"
+                    rows="3" required></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeBrandModal()"
+                    class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300 transition font-semibold">Cancelar</button>
+                <button type="submit" id="brandModalSubmit"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-semibold shadow">Guardar</button>
+            </div>
+        </form>
+        <div id="brandModalError" class="text-red-600 mt-4 text-sm"></div>
+    </div>
+</div>
+
+<!-- Modal Eliminar Marca -->
+<div id="deleteBrandModal"
+    class="hidden fixed inset-0  bg-opacity-40 flex items-center justify-center z-50 transition-all">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg relative animate-fade-in">
+        <button type="button" onclick="closeDeleteBrandModal()"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl focus:outline-none"
+            aria-label="Cerrar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Eliminar Marca</h2>
+        <p id="deleteBrandText" class="mb-6 text-gray-700"></p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeDeleteBrandModal()"
+                class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300 transition font-semibold">Cancelar</button>
+            <button type="button" id="deleteBrandConfirm"
+                class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition font-semibold shadow">Eliminar</button>
+        </div>
+        <div id="deleteBrandError" class="text-red-600 mt-4 text-sm"></div>
+    </div>
+</div>
+
+<!-- Modal de confirmación mejorado -->
+<div id="confirmModal" class="hidden fixed inset-0  bg-opacity-40 flex items-center justify-center z-50 transition-all">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md relative animate-fade-in">
+        <button type="button" onclick="closeConfirmModal()"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl focus:outline-none"
+            aria-label="Cerrar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex flex-col items-center">
+            <div class="bg-blue-100 text-blue-600 rounded-full p-3 mb-4">
+                <i class="fa-solid fa-circle-check text-3xl"></i>
+            </div>
+            <h2 id="confirmModalTitle" class="text-2xl font-bold mb-4 text-gray-800"></h2>
+            <button onclick="closeConfirmModal()"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg mt-2 hover:bg-blue-700 transition font-semibold shadow">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.25s ease;
+    }
+</style>
+
+<script>
+    function openAddBrandModal() {
+        document.getElementById('brandModalTitle').innerText = 'Agregar Marca';
+        document.getElementById('brandForm').reset();
+        document.getElementById('brand_id').value = '';
+        document.getElementById('brandModal').classList.remove('hidden');
+        document.getElementById('brandModalSubmit').innerText = 'Guardar';
+        document.getElementById('brandForm').onsubmit = submitAddBrand;
+        document.getElementById('brandModalError').innerText = '';
+    }
+    function openEditBrandModal(id, descripcion) {
+        document.getElementById('brandModalTitle').innerText = 'Editar Marca';
+        document.getElementById('brand_id').value = id;
+        document.getElementById('brand_description').value = descripcion;
+        document.getElementById('brandModal').classList.remove('hidden');
+        document.getElementById('brandModalSubmit').innerText = 'Guardar Cambios';
+        document.getElementById('brandForm').onsubmit = submitEditBrand;
+        document.getElementById('brandModalError').innerText = '';
+    }
+
+    function closeBrandModal() {
+        document.getElementById('brandModal').classList.add('hidden');
+        document.getElementById('brandModalError').innerText = '';
+    }
+
+    function submitAddBrand(e) {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        fetch("{% url 'crear_marca_ajax' %}", {
+            method: "POST",
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: data
+        })
+            .then(res => res.json())
+            .then(json => {
+                if (json.success) {
+                    closeBrandModal();
+                    showConfirmModal('¡Marca creada exitosamente!');
+                } else {
+                    document.getElementById('brandModalError').innerText = json.error || 'Error al crear marca';
+                }
+            });
+    }
+
+    function submitEditBrand(e) {
+        e.preventDefault();
+        const id = document.getElementById('brand_id').value;
+        const data = new FormData(e.target);
+        fetch(`/admin/marcas/editar/${id}/`, {
+            method: "POST",
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: data
+        })
+            .then(res => res.json())
+            .then(json => {
+                if (json.success) {
+                    closeBrandModal();
+                    showConfirmModal('¡Marca editada exitosamente!');
+                } else {
+                    document.getElementById('brandModalError').innerText = json.error || 'Error al editar marca';
+                }
+            });
+    }
+
+    function openDeleteBrandModal(id, descripcion) {
+        document.getElementById('deleteBrandText').innerText = `¿Estás seguro de eliminar la marca "${descripcion}"?`;
+        document.getElementById('deleteBrandModal').classList.remove('hidden');
+        document.getElementById('deleteBrandConfirm').onclick = function () {
+            fetch(`/admin/marcas/eliminar/${id}/`, {
+                method: "POST",
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        closeDeleteBrandModal();
+                        showConfirmModal('¡Marca eliminada exitosamente!');
+                    } else {
+                        document.getElementById('deleteBrandError').innerText = json.error || 'Error al eliminar marca';
+                    }
+                });
+        };
+    }
+
+    function closeDeleteBrandModal() {
+        document.getElementById('deleteBrandModal').classList.add('hidden');
+        document.getElementById('deleteBrandError').innerText = '';
+    }
+    function showConfirmModal(message) {
+        document.getElementById('confirmModalTitle').innerText = message;
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        location.reload(); // Recarga la página al cerrar el modal
+    }
+</script>
 {% endblock %}

@@ -29,6 +29,8 @@ Perfil de Usuario
                 <p><strong>Teléfono:</strong> {{ usuario_extra.telefono|default:"No registrado" }}</p>
                 <p><strong>Dirección:</strong> {{ usuario_extra.direccion|default:"No registrada" }}</p>
                 <p><strong>RUT:</strong> {{ usuario_extra.rut|default:"-" }}</p>
+                <p><strong>Plan contratado:</strong> {{ usuario_extra.id_plan.nombre }}</p>
+                <p><strong>Entrenador asignado:</strong> {{ usuario_extra.id_entrenador.nombre }} {{usuario_extra.id_entrenador.apellido }}</p>
             </div>
             <!-- Información adicional -->
             <div>
