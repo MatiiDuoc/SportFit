@@ -169,14 +169,6 @@ class Carrito(models.Model):
     id_carrito = models.AutoField(primary_key=True)
     estado = models.CharField(max_length=20)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
-    id_detalle_carrito = models.ForeignKey(
-        'DetalleCarrito',
-        on_delete=models.CASCADE,
-        db_column='id_detalle_carrito',
-        null=True,   # <-- permite nulos
-        blank=True   # <-- permite dejarlo vacío en formularios
-    )
-
     class Meta:
         db_table = 'carrito'
 

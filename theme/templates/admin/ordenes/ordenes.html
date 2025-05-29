@@ -27,38 +27,65 @@ Gestión de Órdenes
         </div>
         <!-- Tabla de órdenes -->
         <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
-            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
+            <table
+                class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
                 <thead>
                     <tr class="bg-gray-200 text-gray-700">
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">ID Orden</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cliente</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Productos</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cantidad</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Total</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Fecha</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Estado</th>
+                        <th>ID Orden</th>
+                        <th>Cliente</th>
+                        <th>Productos</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for pedido in pedidos %}
                     <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Juan Pérez</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Mancuerna, Esterilla</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">3</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$75.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-01</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Completada</td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">{{ pedido.id_pedido }}</td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.usuario.nombre }} {{ pedido.usuario.apellido }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {% for detalle in pedido.carrito.detallecarrito_set.all %}
+                            {{ detalle.id_producto.nombre_producto }} (x{{ detalle.cantidad }}){% if not forloop.last%}, {% endif %}
+                            {% empty %}
+                            Sin productos
+                            {% endfor %}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {% with total=0 %}
+                            {% for detalle in pedido.carrito.detallecarrito_set.all %}
+                            {% if forloop.first %}{% widthratio 0 1 1 as total %}{% endif %}
+                            {% widthratio detalle.cantidad 1 1 as cantidad %}
+                            {% widthratio total|add:cantidad 1 1 as total %}
+                            {% endfor %}
+                            {{ total }}
+                            {% endwith %}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            ${{ pedido.total|floatformat:0 }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.fecha_creacion|date:"Y-m-d H:i" }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.estado }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            <button type="button" class="text-blue-600 hover:underline"
+                                onclick="abrirModal('{{ pedido.id_pedido }}', '{{ pedido.estado }}')">
+                                Cambiar estado
+                            </button>
+                        </td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Ana López</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Banda Elástica</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$15.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-02</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Pendiente</td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-gray-500">No hay órdenes registradas.</td>
                     </tr>
-                    <!-- Más filas aquí -->
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -69,4 +96,50 @@ Gestión de Órdenes
         </div>
     </div>
 </div>
+<!-- Modal para cambiar estado -->
+<div id="modal-estado" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-200">
+    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative animate-fade-in">
+        <button type="button" onclick="cerrarModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 focus:outline-none" aria-label="Cerrar">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <h2 class="text-xl font-semibold mb-6 text-gray-800 text-center">Cambiar estado de la orden</h2>
+        <form id="form-estado" method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="pedido_id" id="modal-pedido-id">
+            <label for="modal-estado-select" class="block text-sm font-medium text-gray-700 mb-1">Nuevo estado</label>
+            <select name="estado" id="modal-estado-select" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                {% for value, label in estados %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in {
+    animation: fade-in 0.25s ease;
+}
+</style>
+<script>
+function abrirModal(id, estadoActual) {
+    document.getElementById('modal-estado').classList.remove('hidden');
+    document.getElementById('modal-pedido-id').value = id;
+    // Selecciona el estado actual
+    let select = document.getElementById('modal-estado-select');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = select.options[i].value === estadoActual;
+    }
+}
+function cerrarModal() {
+    document.getElementById('modal-estado').classList.add('hidden');
+}
+</script>
 {% endblock %}

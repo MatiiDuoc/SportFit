@@ -67,3 +67,7 @@ node_modules/
 media/
 #env
 .env
+#txt
+credentials.txt
+#sqlite
+*.sqlite3

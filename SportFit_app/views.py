@@ -27,7 +27,12 @@ from rest_framework import viewsets, permissions
 from .serializers import PedidoSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import TruncMonth
+from django.db.models import Sum
+from django.utils import timezone
 
+load_dotenv()
+# Forms
 
 class ProductoForm(forms.ModelForm):
     class Meta:
@@ -307,9 +312,6 @@ def checkout_pago(request):
     return render(request, 'client/checkout/pago.html', {
         'usuario': usuario,
     })
-
-
-
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -352,7 +354,11 @@ def checkout_confirmacion(request):
     # -----------------------------------------
 
     if request.method == 'POST':
-        # Validar stock antes de procesar la compra
+        # Si el método de pago es PayPal, redirige al flujo de PayPal
+        if pago.get('metodo_pago') == 'paypal':
+            return redirect('iniciar_pago_paypal')
+
+        # Validar stock antes de procesar la compra (solo para otros métodos)
         for detalle in detalles:
             producto = detalle.id_producto
             if producto.stock < detalle.cantidad:
@@ -373,8 +379,25 @@ def checkout_confirmacion(request):
                 tipo_entrega=entrega.get('tipo_entrega', ''),
                 metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
-                estado='pendiente'
+                estado='entregado'  # o el estado que consideres venta realizada
             )
+
+            # Crear la entrega asociada al pedido
+            entrega_obj = Entrega.objects.create(
+                direccion_entrega=entrega.get('direccion_entrega', ''),
+                fecha_estimada=timezone.now().date(),
+            )
+
+            # Crear la venta asociada
+            Venta.objects.create(
+                fecha=timezone.now(),
+                monto_total=carrito_total,
+                estado='completada',
+                id_carrito=carrito,
+                descuento=descuento,
+                id_entrega=entrega_obj,
+            )
+
             detalles.delete()
             carrito.estado = 'finalizado'
             carrito.save()
@@ -382,7 +405,8 @@ def checkout_confirmacion(request):
             request.session.pop('checkout_entrega', None)
             request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa')
-    es_usuario_saborlatino = usuario and es_usuario_saborlatino(usuario.rut)
+
+    es_usuario_saborlatino_flag = usuario and es_usuario_saborlatino(usuario.rut)
     return render(request, 'client/checkout/confirmacion.html', {
         'usuario': usuario,
         'entrega': entrega,
@@ -391,9 +415,8 @@ def checkout_confirmacion(request):
         'carrito_cantidad': carrito_cantidad,
         'carrito_total': carrito_total,
         'descuento': descuento,
-        'es_saborlatino': es_usuario_saborlatino, 
+        'es_saborlatino': es_usuario_saborlatino_flag,
     })
-
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
     print("===> Entrando a iniciar_pago_webpay")
@@ -452,8 +475,6 @@ def webpay_retorno(request):
                 messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
                 return redirect('carrito')
 
-        # Descontar stock de forma atómica
-        from django.db import transaction
         with transaction.atomic():
             for detalle in detalles:
                 producto = detalle.id_producto
@@ -467,8 +488,17 @@ def webpay_retorno(request):
                 tipo_entrega=entrega.get('tipo_entrega', ''),
                 metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
-                estado='En curso'
+                estado='entregado'
             )
+
+            # Crear la venta asociada
+            Venta.objects.create(
+                fecha=timezone.now(),
+                monto_total=carrito_total,
+                estado='completada',
+                id_carrito=carrito,
+            )
+
             detalles.delete()
             carrito.estado = 'finalizado'
             carrito.save()
@@ -479,6 +509,7 @@ def webpay_retorno(request):
     else:
         error_msg = response.get('status', 'Pago no autorizado')
         return render(request, 'webpay/error.html', {'error': error_msg})
+    
 #paypal
 paypalrestsdk.configure({
     "mode": "sandbox",
@@ -513,9 +544,13 @@ def iniciar_pago_paypal(request):
 
     if payment.create():
         for link in payment.links:
+            print("LINK:", link.href, link.method)
             if link.method == "REDIRECT":
+                print("Redirigiendo a:", link.href)
                 return redirect(link.href)
+        print("No se encontró link de redirección en PayPal.")
     else:
+        print("Error al crear el pago PayPal:", payment.error)
         return render(request, 'paypal/error.html', {'error': payment.error})
 def paypal_retorno(request):
     payment_id = request.GET.get('paymentId')
@@ -536,40 +571,45 @@ def paypal_retorno(request):
                 messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
                 return redirect('carrito')
 
-        # Descontar stock de forma atómica
-        from django.db import transaction
         with transaction.atomic():
             for detalle in detalles:
                 producto = detalle.id_producto
                 producto.stock -= detalle.cantidad
                 producto.save()
 
-            pedido_existente = Pedido.objects.filter(
+            pedido = Pedido.objects.create(
                 usuario=usuario,
                 carrito=carrito,
-                estado='pagado'
-            ).first()
+                direccion_entrega=entrega.get('direccion_entrega', ''),
+                tipo_entrega=entrega.get('tipo_entrega', ''),
+                metodo_pago=pago.get('metodo_pago', ''),
+                total=carrito_total,
+                estado='entregado'
+            )
 
-            if not pedido_existente:
-                pedido = Pedido.objects.create(
-                    usuario=usuario,
-                    carrito=carrito,
-                    direccion_entrega=entrega.get('direccion_entrega', ''),
-                    tipo_entrega=entrega.get('tipo_entrega', ''),
-                    metodo_pago=pago.get('metodo_pago', ''),
-                    total=carrito_total,
-                    estado='procesando'
-                )
-                detalles.delete()
-                carrito.estado = 'finalizado'
-                carrito.save()
-                request.session.pop('checkout_usuario', None)
-                request.session.pop('checkout_entrega', None)
-                request.session.pop('checkout_pago', None)
+            entrega_obj = Entrega.objects.create(
+                direccion_entrega=entrega.get('direccion_entrega', ''),
+                fecha_estimada=timezone.now().date(),
+            )
+
+            Venta.objects.create(
+                fecha=timezone.now(),
+                monto_total=carrito_total,
+                estado='completada',
+                id_carrito=carrito,
+                id_entrega=entrega_obj,
+            )
+
+            detalles.delete()
+            carrito.estado = 'finalizado'
+            carrito.save()
+            request.session.pop('checkout_usuario', None)
+            request.session.pop('checkout_entrega', None)
+            request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa')
     else:
         return render(request, 'paypal/error.html', {'error': payment.error})
-
+    
 @login_required
 def agregar_observacion(request, compra_id):
     if request.method == 'POST':
@@ -805,20 +845,55 @@ def contratar_plan(request):
 # Administrador
 #----------------------------------
 def dashboard_administrador(request):
-    # Datos de ejemplo (pueden venir de la base de datos)
-    ventas = [1200, 1900, 3000, 5000]
-    semanas = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
+    # Ventas totales (suma de total de pedidos entregados)
+    ventas_totales = Pedido.objects.filter(estado='entregado').aggregate(total=Sum('total'))['total'] or 0
+    # Usuarios activos (puedes definirlo como usuarios con pedidos, o simplemente todos)
+    usuarios_activos = Usuario.objects.count()    # Órdenes pendientes (estado pendiente)
+    ordenes_pendientes = Pedido.objects.filter(estado='pendiente').count()
+    # Productos en stock (suma de stock de todos los productos)
+    productos_en_stock = Producto.objects.aggregate(total=Sum('stock'))['total'] or 0
+    fecha_actual = timezone.now().strftime('%Y-%m-%d')
+    # Agrupa ventas por mes y suma el total
+    ventas_por_mes = (
+        Pedido.objects
+        .filter(estado='entregado')  # O el estado que consideres "venta realizada"
+        .annotate(mes=TruncMonth('fecha_creacion'))
+        .values('mes')
+        .annotate(total=Sum('total'))
+        .order_by('mes')
+    )
 
-    # Pasar los datos al contexto
-    context = {
-        'ventas': json.dumps(ventas),  # Convertir a JSON para usar en JavaScript
-        'semanas': json.dumps(semanas),
-    }
-    return render(request, 'admin/dashboard/dashboard.html')
+    # Prepara los datos para el gráfico
+    labels = [v['mes'].strftime('%b %Y') for v in ventas_por_mes]
+    data = [v['total'] for v in ventas_por_mes]
+
+    return render(request, 'admin/dashboard/dashboard.html', {
+        'labels': labels,
+        'data': data,
+        'fecha_actual': fecha_actual,
+        'ventas_totales': ventas_totales,
+        'usuarios_activos': usuarios_activos,
+        'ordenes_pendientes': ordenes_pendientes,
+        'productos_en_stock': productos_en_stock,
+    })
 # -------------------- reportes --------------------
 def reportes(request):
-    # Vista para mostrar reportes
-    return render(request, 'admin/reportes/reporte.html', {})
+    # Obtener todas las ventas
+    ventas = Venta.objects.all()
+    # Sumar el total de ventas
+    total_ventas = ventas.aggregate(total=Sum('monto_total'))['total'] or 0
+    # Sumar la cantidad de productos vendidos
+    total_productos = sum(
+        sum(detalle.cantidad for detalle in venta.carrito.detallecarrito_set.all())
+        for venta in ventas
+    )
+    # Pasar los resultados al contexto
+    context = {
+        'ventas': ventas,  # <-- para mostrar en la tabla
+        'total_ventas': total_ventas,
+        'total_productos': total_productos,
+    }
+    return render(request, 'admin/reportes/reporte.html', context)
 
 # -------------------- Usuarios --------------------
 def obtener_usuarios_api():
@@ -919,8 +994,38 @@ def crear_usuario(request):
 
 # -------------------- Ventas --------------------
 def ventas(request):
-    # Vista para listar ventas
-    return render(request, 'admin/venta/ventas.html', {})
+    pedidos = Pedido.objects.all().order_by('-fecha_creacion')
+    clientes = Usuario.objects.filter(pedido__isnull=False).distinct()
+
+    # Filtros
+    client = request.GET.get('client')
+    order_date = request.GET.get('order_date')
+    status = request.GET.get('status')
+    price_min = request.GET.get('price_min')
+    price_max = request.GET.get('price_max')
+    sale_date = request.GET.get('sale_date')
+
+    if client:
+        nombre, apellido = client.split(' ', 1)
+        pedidos = pedidos.filter(usuario__nombre=nombre, usuario__apellido=apellido)
+    if order_date:
+        pedidos = pedidos.filter(fecha_creacion__date=order_date)
+    if sale_date:
+        pedidos = pedidos.filter(fecha_creacion__date=sale_date)
+    if status:
+        pedidos = pedidos.filter(estado=status)
+    if price_min:
+        pedidos = pedidos.filter(total__gte=price_min)
+    if price_max:
+        pedidos = pedidos.filter(total__lte=price_max)
+
+    estados = Pedido.ESTADO_CHOICES if hasattr(Pedido, 'ESTADO_CHOICES') else []
+
+    return render(request, 'admin/venta/ventas.html', {
+        'pedidos': pedidos,
+        'clientes': clientes,
+        'estados': estados,
+    })
 
 def venta_detalle(request):
     # Vista para mostrar detalles de una venta
@@ -1136,8 +1241,36 @@ def eliminar_proveedor_ajax(request, id):
 
 # -------------------- Órdenes --------------------
 def ordenes(request):
-    # Vista para listar órdenes
-    return render(request, 'admin/ordenes/ordenes.html', {})
+    pedidos = Pedido.objects.select_related('usuario', 'carrito').order_by('-fecha_creacion')
+    clientes = Usuario.objects.filter(pedido__isnull=False).distinct()    # Filtros
+    client = request.GET.get('client')
+    order_date = request.GET.get('order_date')
+    status = request.GET.get('status')
+
+    if client:
+        nombre, apellido = client.split(' ', 1)
+        pedidos = pedidos.filter(usuario__nombre=nombre, usuario__apellido=apellido)
+    if order_date:
+        pedidos = pedidos.filter(fecha_creacion__date=order_date)
+    if status:
+        pedidos = pedidos.filter(estado=status)
+
+    # Cambio de estado desde el modal
+    if request.method == 'POST':
+        id_pedido = request.POST.get('pedido_id')
+        nuevo_estado = request.POST.get('estado')
+        pedido = Pedido.objects.filter(pk=id_pedido).first()
+        if pedido and nuevo_estado in dict(Pedido.ESTADO_CHOICES):
+            pedido.estado = nuevo_estado
+            pedido.save()
+        return redirect('ordenes')
+
+    estados = Pedido.ESTADO_CHOICES
+    return render(request, 'admin/ordenes/ordenes.html', {
+        'pedidos': pedidos,
+        'estados': estados,
+        'clientes': clientes,
+    })
 
 def orden_detalle(request):
     # Vista para mostrar detalles de una orden

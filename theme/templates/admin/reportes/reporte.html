@@ -37,7 +37,8 @@ Gestión de Reportes
 
         <!-- Tabla de reportes -->
         <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
-            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden"
+                id="reportTable">
                 <thead>
                     <tr class="bg-gray-200 text-gray-700">
                         <th scope="col" class="px-4 py-2 text-left font-semibold border-b border-gray-300">ID Venta</th>
@@ -54,34 +55,41 @@ Gestión de Reportes
                     </tr>
                 </thead>
                 <tbody>
+                    {% for venta in ventas %}
                     <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-4 py-2 text-gray-800">1</td>
-                        <td class="px-4 py-2 text-gray-800">2025-05-01</td>
-                        <td class="px-4 py-2 text-gray-800">Juan Pérez</td>
-                        <td class="px-4 py-2 text-gray-800">Producto A, Producto B</td>
-                        <td class="px-4 py-2 text-gray-800">15</td>
-                        <td class="px-4 py-2 text-gray-800">$150.000</td>
-                        <td class="px-4 py-2 text-gray-800">Tarjeta de Crédito</td>
-                        <td class="px-4 py-2 text-gray-800">Completada</td>
+                        <td class="px-4 py-2 text-gray-800">{{ venta.id }}</td>
+                        <td class="px-4 py-2 text-gray-800">{{ venta.fecha_creacion|date:"Y-m-d" }}</td>
+                        <td class="px-4 py-2 text-gray-800">{{ venta.usuario.nombre }} {{ venta.usuario.apellido }}</td>
+                        <td class="px-4 py-2 text-gray-800">
+                            {% for detalle in venta.carrito.detallecarrito_set.all %}
+                            {{ detalle.id_producto.nombre_producto }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td class="px-4 py-2 text-gray-800">
+                            {% with total=0 %}
+                            {% for detalle in venta.carrito.detallecarrito_set.all %}
+                            {% widthratio detalle.cantidad 1 1 as cantidad %}
+                            {% widthratio total|add:cantidad 1 1 as total %}
+                            {% endfor %}
+                            {{ total }}
+                            {% endwith %}
+                        </td>
+                        <td class="px-4 py-2 text-gray-800">${{ venta.total|floatformat:0 }}</td>
+                        <td class="px-4 py-2 text-gray-800">{{ venta.metodo_pago }}</td>
+                        <td class="px-4 py-2 text-gray-800">{{ venta.estado }}</td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-4 py-2 text-gray-800">2</td>
-                        <td class="px-4 py-2 text-gray-800">2025-05-02</td>
-                        <td class="px-4 py-2 text-gray-800">Ana López</td>
-                        <td class="px-4 py-2 text-gray-800">Producto C</td>
-                        <td class="px-4 py-2 text-gray-800">5</td>
-                        <td class="px-4 py-2 text-gray-800">$50.000</td>
-                        <td class="px-4 py-2 text-gray-800">Efectivo</td>
-                        <td class="px-4 py-2 text-gray-800">Completada</td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-6 text-gray-500">No hay ventas registradas.</td>
                     </tr>
-                    <!-- Más filas aquí -->
+                    {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr class="bg-gray-200 text-gray-700 font-semibold">
                         <td colspan="4" class="px-4 py-2 text-right border-t border-gray-300">Total Productos Vendidos:
                         </td>
-                        <td class="px-4 py-2 text-gray-800 border-t border-gray-300">20</td>
-                        <td colspan="3" class="px-4 py-2 text-gray-800 border-t border-gray-300">$200.000</td>
+                        <td class="px-4 py-2 text-gray-800 border-t border-gray-300">{{ total_productos }}</td>
+                        <td colspan="3" class="px-4 py-2 text-gray-800 border-t border-gray-300">${{ total_ventas|floatformat:0 }}</td>
                     </tr>
                 </tfoot>
             </table>
