@@ -34,6 +34,7 @@ urlpatterns = [
     path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('about/', views.about, name='about'),
+    path('accounts/', include('allauth.urls')),
     #========================
     #CLIENTE
     #========================
@@ -66,6 +67,7 @@ urlpatterns = [
     path('client/', views.contratar_plan, name='mis_planes'),
     path('producto/<int:producto_id>/comentar/', views.agregar_comentario_producto, name='agregar_comentario_producto'),
     path('seguimiento/<int:pedido_id>/', views.seguimiento_pedido, name='seguimiento_pedido'),
+    path('completar_perfil/', views.completar_perfil, name='completar_perfil'),
     #========================   
     #ENTRENADOR
     #======================== 

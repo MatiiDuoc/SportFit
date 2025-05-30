@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 p-4">
+                <h2 class="mb-4 text-center text-primary fw-bold text-2xl">Debes de completar tu perfil para poder
+                    comprar</h2>
+                <form method="post" novalidate autocomplete="off">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field|add_class:"form-control form-control-lg rounded-3" }}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit"
+                        class="btn btn-primary w-100 py-2 fs-5 rounded-3 mt-3 shadow-sm">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de éxito -->
+<div id="perfilEditadoModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
+        <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 text-green-500 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <h3 class="text-lg font-bold text-green-600">¡Perfil actualizado!</h3>
+        </div>
+        <p class="mb-2">Tu perfil ha sido editado correctamente.</p>
+        <p class="mb-4"><strong>Correo:</strong> {{ form.instance.correo }}</p>
+        <button onclick="document.getElementById('perfilEditadoModal').classList.add('hidden')"
+            class="w-full py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition">Aceptar</button>
+    </div>
+</div>
+{% if messages %}
+{% for message in messages %}
+{% if "Perfil completado" in message %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('perfilEditadoModal').classList.remove('hidden');
+    });
+</script>
+{% endif %}
+{% endfor %}
+{% endif %}
+<style>
+    body {
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        min-height: 100vh;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 1.5rem;
+    }
+
+    @media (max-width: 576px) {
+        .card {
+            padding: 1.5rem !important;
+        }
+    }
+</style>
+{% endblock %}

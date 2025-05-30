@@ -75,6 +75,15 @@ class RutinaForm(forms.ModelForm):
             'tel_emergencia'
         ]
 
+class CompletarPerfilForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['correo','rut', 'nombre', 'apellido', 'telefono', 'direccion', 'tel_emergencia', 'id_comuna', 'id_genero']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['correo'].disabled = True
+
 class PlanEntrenamientoForm(forms.ModelForm):
     class Meta:
         model = PlanEntrenamiento
@@ -124,18 +133,25 @@ def about(request):
 @login_required
 def pedidos_cliente(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Debes iniciar sesión para ver tus pedidos.")
+        return redirect('login')
     pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
     return render(request, 'client/pedidos.html', {'pedidos': pedidos})
-
 
 def home(request):
     productos_comentados = Pedido.objects.exclude(observacion__isnull=True).exclude(observacion__exact='').order_by('-fecha_creacion')
     return render(request, 'home.html', {
         'productos_comentados': productos_comentados,
     })
+    
 @login_required
 def historial_compras(request):
-    usuario = Usuario.objects.get(correo=request.user.email)
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
+
     compras = Pedido.objects.filter(
         usuario=usuario,
         estado__in=['entregado', 'cancelado']
@@ -160,22 +176,34 @@ def historial_compras(request):
         })
 
     return render(request, 'client/historial_compras.html', {'compras_con_productos': compras_con_productos})
+
 @login_required
 def detalle_compra(request, compra_id):
-    usuario = Usuario.objects.get(correo=request.user.email)
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     compra = get_object_or_404(Pedido, id_pedido=compra_id, usuario=usuario)
     return render(request, 'client/detalle_compra.html', {'compra': compra})
+
 @login_required
 def envios(request):
-    usuario = Usuario.objects.get(correo=request.user.email)
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     pedidos_enviados = Pedido.objects.filter(
         usuario=usuario,
         estado='enviado'
     ).order_by('-fecha_creacion')
     return render(request, 'client/envios.html', {'pedidos': pedidos_enviados})
+
 @login_required
 def carrito(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
     productos = []
     cantidad = 0
@@ -189,7 +217,7 @@ def carrito(request):
             else:
                 img_url = img if img else ''
             productos.append({
-                'id_detalle_carrito': detalle.id_detalle_carrito,  # <-- agrega esta línea
+                'id_detalle_carrito': detalle.id_detalle_carrito,
                 'nombre': producto.nombre_producto,
                 'imagen': img_url,
                 'cantidad': detalle.cantidad,
@@ -201,35 +229,33 @@ def carrito(request):
         'carrito_cantidad': cantidad,
         'carrito_productos': productos,
     })
+    
 # Vista para agregar un producto al carrito
 @login_required
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
-        print("POST recibido para producto:", producto_id)
         usuario = Usuario.objects.filter(correo=request.user.email).first()
-        print("Usuario:", usuario)
+        if not usuario:
+            messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+            return redirect('productos_cliente')
+
         producto = get_object_or_404(Producto, pk=producto_id)
-        print("Producto:", producto)
 
         carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
-        print("Carrito encontrado:", carrito)
         if not carrito:
             carrito = Carrito.objects.create(
                 id_usuario=usuario,
                 estado='activo'
             )
-            print("Carrito creado:", carrito)
 
         detalle = DetalleCarrito.objects.filter(
             id_producto=producto,
             id_carrito=carrito
         ).first()
-        print("Detalle encontrado:", detalle)
 
         if detalle:
             detalle.cantidad += 1
             detalle.save()
-            print("Cantidad actualizada:", detalle.cantidad)
         else:
             DetalleCarrito.objects.create(
                 cantidad=1,
@@ -237,10 +263,8 @@ def agregar_al_carrito(request, producto_id):
                 id_producto=producto,
                 id_carrito=carrito
             )
-            print("Detalle creado para producto:", producto_id)
         return redirect('productos_cliente')
     else:
-        print("No es POST")
         return redirect('productos_cliente')
     
 @login_required
@@ -269,14 +293,22 @@ def aumentar_cantidad_carrito(request, detalle_id):
 @login_required
 def direcciones(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     return render(request, 'client/direcciones.html', {
-        'direcciones': [usuario] if usuario and usuario.direccion else [],
+        'direcciones': [usuario] if usuario.direccion else [],
         'usuario_extra': usuario,
     })
     
 
+@login_required
 def checkout_usuario(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    # Validar perfil completo antes de continuar
+    if not usuario or not usuario.rut or not usuario.nombre or not usuario.apellido or not usuario.telefono or not usuario.direccion:
+        messages.info(request, "Debes completar tu perfil antes de comprar.")
+        return redirect('completar_perfil')
     if request.method == 'POST':
         request.session['checkout_usuario'] = {
             'rut': request.POST['rut'],
@@ -288,9 +320,12 @@ def checkout_usuario(request):
     return render(request, 'client/checkout/usuario.html', {
         'usuario': usuario,
     })
-
+    
 def checkout_entrega(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     if request.method == 'POST':
         request.session['checkout_entrega'] = {
             'tipo_entrega': request.POST['tipo_entrega'],
@@ -303,6 +338,9 @@ def checkout_entrega(request):
 
 def checkout_pago(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     if request.method == 'POST':
         request.session['checkout_pago'] = {
             'metodo_pago': request.POST['metodo_pago'],
@@ -315,6 +353,10 @@ def checkout_pago(request):
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
+
     entrega = request.session.get('checkout_entrega', {})
     pago = request.session.get('checkout_pago', {})
 
@@ -416,7 +458,8 @@ def checkout_confirmacion(request):
         'carrito_total': carrito_total,
         'descuento': descuento,
         'es_saborlatino': es_usuario_saborlatino_flag,
-    })
+})
+    
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
     print("===> Entrando a iniciar_pago_webpay")
@@ -611,9 +654,25 @@ def paypal_retorno(request):
         return render(request, 'paypal/error.html', {'error': payment.error})
     
 @login_required
+def completar_perfil(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if request.method == 'POST':
+        form = CompletarPerfilForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "¡Perfil completado!")
+            return redirect('home')
+    else:
+        form = CompletarPerfilForm(instance=usuario)
+    return render(request, 'client/completar_perfil.html', {'form': form})   
+    
+@login_required
 def agregar_observacion(request, compra_id):
     if request.method == 'POST':
-        usuario = Usuario.objects.get(correo=request.user.email)
+        usuario = Usuario.objects.filter(correo=request.user.email).first()
+        if not usuario:
+            messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+            return redirect('historial_compras')
         compra = get_object_or_404(Pedido, id_pedido=compra_id, usuario=usuario)
         observacion = request.POST.get('observacion', '').strip()
         if observacion:
@@ -628,6 +687,9 @@ def agregar_observacion(request, compra_id):
 def agregar_comentario_producto(request, producto_id):
     if request.method == 'POST':
         usuario = Usuario.objects.filter(correo=request.user.email).first()
+        if not usuario:
+            messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+            return redirect('detalle_producto', producto_id=producto_id)
         producto = get_object_or_404(Producto, pk=producto_id)
         comentario = request.POST.get('comentario', '').strip()
         if comentario:
@@ -663,7 +725,7 @@ def pedidos(request):
 def logout_view(request):
     # Vista para cerrar sesión
     logout(request)
-    return render(request, 'home.html')
+    return redirect('home')
 
 # -------------------- Registro --------------------
 def registro(request):
@@ -741,35 +803,27 @@ def registro(request):
         'generos': generos,
         'planes': planes
     })
-
+    
 def login_view(request):
     if request.method == 'POST':
-        correo = request.POST['email']
-        contrasena = request.POST['password']
+        correo = request.POST.get('email')
+        contrasena = request.POST.get('password')
 
-        # Buscar usuario por correo
-        user_obj = User.objects.filter(email=correo).first()
-        if user_obj:
-            username = user_obj.username
-        else:
-            username = correo  # Por si acaso el username es el correo
-
-        user = authenticate(request, username=username, password=contrasena)
+        user = authenticate(request, username=correo, password=contrasena)
         if user is not None:
             login(request, user)
-            if user.is_superuser:
-                return redirect('dashboard_administrador')
-            # Buscar el usuario extra
             usuario_extra = Usuario.objects.filter(correo=user.email).first()
-            if usuario_extra:
-                if usuario_extra.tipo_usuario == 'entrenador':
-                    return redirect('dashboard_entrenador')
-                elif usuario_extra.tipo_usuario == 'vendedor':
-                    return redirect('dashboard_vendedor')
-                elif usuario_extra.tipo_usuario == 'cliente':
-                    return redirect('productos_cliente')
-                elif usuario_extra.tipo_usuario == 'administrador':
-                    return redirect('dashboard_administrador')
+            if not usuario_extra:
+                messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+                return redirect('home')
+            if user.is_superuser or usuario_extra.tipo_usuario == 'administrador':
+                return redirect('dashboard_administrador')
+            elif usuario_extra.tipo_usuario == 'entrenador':
+                return redirect('dashboard_entrenador')
+            elif usuario_extra.tipo_usuario == 'vendedor':
+                return redirect('dashboard_vendedor')
+            elif usuario_extra.tipo_usuario == 'cliente':
+                return redirect('productos_cliente')
             return redirect('home')
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
@@ -825,7 +879,7 @@ def contratar_plan(request):
         return render(request, 'client/plan.html', {
             'tiene_plan': True,
             'form': None,
-            'usuario_extra': usuario,  # <-- así lo pasas
+            'usuario_extra': usuario,
         })
 
     if request.method == 'POST':
@@ -840,15 +894,22 @@ def contratar_plan(request):
     return render(request, 'client/plan.html', {
         'tiene_plan': False,
         'form': form,
+        'usuario_extra': usuario,
     })
 #----------------------------------
 # Administrador
-#----------------------------------
+#----------------------------------@login_required
 def dashboard_administrador(request):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'administrador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
     # Ventas totales (suma de total de pedidos entregados)
     ventas_totales = Pedido.objects.filter(estado='entregado').aggregate(total=Sum('total'))['total'] or 0
     # Usuarios activos (puedes definirlo como usuarios con pedidos, o simplemente todos)
-    usuarios_activos = Usuario.objects.count()    # Órdenes pendientes (estado pendiente)
+    usuarios_activos = Usuario.objects.count()
+    # Órdenes pendientes (estado pendiente)
     ordenes_pendientes = Pedido.objects.filter(estado='pendiente').count()
     # Productos en stock (suma de stock de todos los productos)
     productos_en_stock = Producto.objects.aggregate(total=Sum('stock'))['total'] or 0
@@ -856,7 +917,7 @@ def dashboard_administrador(request):
     # Agrupa ventas por mes y suma el total
     ventas_por_mes = (
         Pedido.objects
-        .filter(estado='entregado')  # O el estado que consideres "venta realizada"
+        .filter(estado='entregado')
         .annotate(mes=TruncMonth('fecha_creacion'))
         .values('mes')
         .annotate(total=Sum('total'))
@@ -875,8 +936,10 @@ def dashboard_administrador(request):
         'usuarios_activos': usuarios_activos,
         'ordenes_pendientes': ordenes_pendientes,
         'productos_en_stock': productos_en_stock,
+        'usuario_extra': usuario,  # Opcional, si lo necesitas en el template
     })
 # -------------------- reportes --------------------
+@login_required
 def reportes(request):
     # Obtener todas las ventas
     ventas = Venta.objects.all()
@@ -919,6 +982,7 @@ def es_usuario_saborlatino(rut_usuario):
     ruts_saborlatino = {u['numero_rut'] for u in usuarios_api}
     return rut_usuario in ruts_saborlatino
 
+@login_required
 def usuarios(request):
     try:
         usuarios_api = obtener_usuarios_api()
@@ -945,6 +1009,7 @@ def usuario_detalle(request):
     # Vista para mostrar detalles de un usuario
     return render(request, 'usuario/usuario_detalle.html', {})
 
+@login_required
 def editar_usuario(request, id):
     usuario = get_object_or_404(Usuario, pk=id)
     if request.method == 'POST':
@@ -957,11 +1022,13 @@ def editar_usuario(request, id):
     return
 
 @require_POST
+@login_required
 def eliminar_usuario(request, id):
     usuario = get_object_or_404(Usuario, pk=id)
     usuario.delete()
     return redirect('usuarios')
 
+@login_required
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -993,6 +1060,7 @@ def crear_usuario(request):
     return render(request, 'admin/usuario/crear_usuario.html', {'form': form})
 
 # -------------------- Ventas --------------------
+@login_required
 def ventas(request):
     pedidos = Pedido.objects.all().order_by('-fecha_creacion')
     clientes = Usuario.objects.filter(pedido__isnull=False).distinct()
@@ -1284,6 +1352,9 @@ def editar_orden(request):
 @login_required
 def perfil(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     return render(request, 'admin/perfil/perfil.html', {
         'user': request.user,
         'usuario_extra': usuario,
@@ -1291,6 +1362,9 @@ def perfil(request):
 
 def perfil_cliente(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     return render(request, 'client/perfil_cliente.html', {
         'user': request.user,
         'usuario_extra': usuario,
@@ -1300,6 +1374,8 @@ def editar_perfil(request):
     # Vista para editar el perfil del usuario
     return render(request, 'perfil/editar_perfil.html', {})
 
+
+@login_required
 def editar_perfil_cliente(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario:
@@ -1359,21 +1435,18 @@ def dashboard_entrenador(request):
     }
     return render(request, 'entrenador/dashboard/dashboard.html', context)
 
-
+@login_required
 def clientes_entrenador(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    # Si tienes el campo id_entrenador:
-    # clientes = Usuario.objects.filter(id_entrenador=usuario)
-
-    # Si NO tienes el campo, muestra todos los clientes:
-    clientes = Usuario.objects.filter(tipo_usuario='cliente')
+    # Mostrar solo los clientes asignados a este entrenador
+    clientes = Usuario.objects.filter(tipo_usuario='cliente', id_entrenador=usuario)
     return render(request, 'entrenador/alumnos/alumnos_rutinas.html', {'clientes': clientes})
 
-
+@login_required
 def cliente_detalle_entrenador(request, cliente_id):
     # Vista para mostrar detalles de un cliente del entrenador
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -1381,12 +1454,18 @@ def cliente_detalle_entrenador(request, cliente_id):
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
-    return render(request, 'entrenador/clientes/cliente_detalle.html', {'cliente': cliente})
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, id_entrenador=usuario)
+    return render(request, 'entrenador/clientes/cliente_detalle.html', {
+        'cliente': cliente,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
+    })
 
 @login_required
 def seguimiento_pedido(request, pedido_id):
-    usuario = Usuario.objects.get(correo=request.user.email)
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario:
+        messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
+        return redirect('home')
     pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
     entrega = Entrega.objects.filter(id_entrega=pedido.venta.id_entrega_id).first() if pedido.venta and pedido.venta.id_entrega_id else None
     seguimientos = SeguimientoEntrega.objects.filter(id_entrega=entrega).order_by('-fecha_actualizacion') if entrega else []
@@ -1401,6 +1480,7 @@ def seguimiento_pedido(request, pedido_id):
         'estados_alcanzados': estados_alcanzados,
     })
 
+@login_required
 def crear_rutina(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
@@ -1421,8 +1501,12 @@ def crear_rutina(request):
     else:
         form = PlanEntrenamientoForm()
 
-    return render(request, 'entrenador/rutinas/crear_rutina.html', {'form': form})
+    return render(request, 'entrenador/rutinas/crear_rutina.html', {
+        'form': form,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
+    })
 
+@login_required
 def rutinas_entrenador(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
@@ -1431,14 +1515,15 @@ def rutinas_entrenador(request):
 
     # Mostrar solo los planes creados por este entrenador
     rutinas = PlanEntrenamiento.objects.filter(id_entrenador=usuario)
-
     form = PlanEntrenamientoForm()
 
     return render(request, 'entrenador/rutinas/rutinas.html', {
         'rutinas': rutinas,
         'form': form,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
     })
 
+@login_required
 def rutina_detalle_entrenador(request, rutina_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
@@ -1448,9 +1533,10 @@ def rutina_detalle_entrenador(request, rutina_id):
     rutina = get_object_or_404(PlanEntrenamiento, id_plan=rutina_id, id_entrenador=usuario)
     return render(request, 'entrenador/rutinas/rutina_detalle.html', {
         'rutina': rutina,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
     })
 
-
+@login_required
 def editar_rutina(request, rutina_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
@@ -1467,9 +1553,13 @@ def editar_rutina(request, rutina_id):
     else:
         form = PlanEntrenamientoForm(instance=rutina)
 
-    return render(request, 'entrenador/rutinas/editar_rutina.html', {'form': form, 'rutina': rutina})
+    return render(request, 'entrenador/rutinas/editar_rutina.html', {
+        'form': form,
+        'rutina': rutina,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
+    })
 
-
+@login_required
 def eliminar_rutina(request, rutina_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
@@ -1483,7 +1573,10 @@ def eliminar_rutina(request, rutina_id):
         return redirect('rutinas_entrenador')
 
     # Muestra una página de confirmación antes de eliminar
-    return render(request, 'entrenador/rutinas/eliminar_rutina.html', {'rutina': rutina})
+    return render(request, 'entrenador/rutinas/eliminar_rutina.html', {
+        'rutina': rutina,
+        'entrenador': usuario,  # Opcional, si lo necesitas en el template
+    })
 
 def cliente_detalle_entrenador(request, cliente_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -1498,14 +1591,14 @@ def cliente_detalle_entrenador(request, cliente_id):
         'rutinas': rutinas,
     })
 
-
+@login_required
 def asignar_rutina_entrenador(request, cliente_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, id_entrenador=usuario)
     if request.method == 'POST':
         rutina_id = request.POST.get('rutina')
         rutina = get_object_or_404(EntrenadorPlan, id_plan=rutina_id, id_entrenador=usuario)
@@ -1521,13 +1614,14 @@ def asignar_rutina_entrenador(request, cliente_id):
     })
 
 
+@login_required
 def eliminar_rutina_cliente(request, cliente_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, entrenador=usuario)
+    cliente = get_object_or_404(Usuario, id_usuario=cliente_id, id_entrenador=usuario)
     if request.method == 'POST':
         cliente.rutina_asignada = None
         cliente.save()
@@ -1536,6 +1630,7 @@ def eliminar_rutina_cliente(request, cliente_id):
 
     return render(request, 'entrenador/clientes/eliminar_rutina.html', {'cliente': cliente})
 
+@login_required
 def perfil_entrenador(request):
     entrenador = Usuario.objects.filter(correo=request.user.email, tipo_usuario='entrenador').first()
     if not entrenador:
@@ -1543,14 +1638,15 @@ def perfil_entrenador(request):
         return redirect('home')
     return render(request, 'entrenador/perfil/perfil.html', {'entrenador': entrenador})
 
+@login_required
 def editar_perfil_entrenador(request):
-    usuario = Usuario.objects.filter(correo=request.user.email).first()
-    if not usuario or usuario.tipo_usuario != 'entrenador':
+    entrenador = Usuario.objects.filter(correo=request.user.email, tipo_usuario='entrenador').first()
+    if not entrenador:
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
     if request.method == 'POST':
-        form = EditarPerfilEntrenadorForm(request.POST, instance=usuario)
+        form = EditarPerfilEntrenadorForm(request.POST, instance=entrenador)
         if form.is_valid():
             form.save()
             messages.success(request, "Perfil actualizado correctamente.")
@@ -1558,17 +1654,20 @@ def editar_perfil_entrenador(request):
         else:
             messages.error(request, "Corrige los errores del formulario.")
     else:
-        form = EditarPerfilEntrenadorForm(instance=usuario)
+        form = EditarPerfilEntrenadorForm(instance=entrenador)
 
-    return render(request, 'entrenador/perfil/editar_perfil.html', {'form': form})
-
+    return render(request, 'entrenador/perfil/editar_perfil.html', {
+        'form': form,
+        'entrenador': entrenador,
+    })
+@login_required
 def editar_cliente_entrenador(request, id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    cliente = get_object_or_404(Usuario, id_usuario=id, entrenador=usuario)
+    cliente = get_object_or_404(Usuario, id_usuario=id, id_entrenador=usuario)
     if request.method == 'POST':
         cliente.nombre = request.POST.get('nombre', cliente.nombre)
         cliente.apellido = request.POST.get('apellido', cliente.apellido)
@@ -1576,25 +1675,27 @@ def editar_cliente_entrenador(request, id):
         cliente.direccion = request.POST.get('direccion', cliente.direccion)
         cliente.save()
         messages.success(request, "Cliente actualizado correctamente.")
-        return redirect('cliente_detalle_entrenador', id=cliente.id_usuario)
+        return redirect('cliente_detalle_entrenador', cliente_id=cliente.id_usuario)
 
     return render(request, 'entrenador/clientes/editar_cliente.html', {
         'cliente': cliente,
     })
 
+@login_required
 def eliminar_cliente_entrenador(request, id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    cliente = get_object_or_404(Usuario, id_usuario=id, entrenador=usuario)
+    cliente = get_object_or_404(Usuario, id_usuario=id, id_entrenador=usuario)
     if request.method == 'POST':
         cliente.delete()
         messages.success(request, "Cliente eliminado correctamente.")
         return redirect('clientes_entrenador')
 
     return render(request, 'entrenador/clientes/eliminar_cliente.html', {'cliente': cliente})
+
 def rutina_detalle_entrenador(request, id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'entrenador':

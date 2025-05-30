@@ -72,8 +72,17 @@
             {% endif %}
 
             {% if request.user.is_authenticated %}
-            <span class="font-semibold text-gray-800 mr-4">
-                Hola! <strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong>
+            <span class="font-semibold text-gray-800 mr-4 flex items-center gap-2">
+                Hola!
+                <strong>
+                    {% if usuario.nombre or usuario.apellido %}
+                        {{ usuario.nombre }} {{ usuario.apellido }}
+                    {% elif request.user.username %}
+                        {{ request.user.username }}
+                    {% else %}
+                    Usuario
+                    {% endif %}
+                </strong>
             </span>
             <div class="relative inline-block">
                 <button id="user-menu-button" class="flex items-center focus:outline-none">
@@ -94,8 +103,8 @@
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Envíos</a>
                     <a href="{% url 'direcciones' %}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Direcciones</a>
-                    <a href="{% url 'mis_planes' %}"
-                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mis planes</a>
+                    <a href="{% url 'mis_planes' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mis
+                        planes</a>
 
                     <hr class="border-gray-200">
                     <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100">Cerrar
@@ -127,10 +136,10 @@
                     class="block py-2 px-4 hover:bg-gray-100 hover:underline hover:font-bold underline-offset-4 hover:decoration-4 hover:decoration-gray-500 rounded-lg">Productos</a>
             </li>
             {% if request.user.is_authenticated %}
-            <li><a href="{% url 'perfil' %}"
+            <li><a href="{% url 'perfil_cliente' %}"
                     class="block py-2 px-4 hover:bg-gray-100 hover:underline hover:font-bold underline-offset-4 hover:decoration-4 hover:decoration-gray-500 rounded-lg">Perfil</a>
             </li>
-            <li><a href="{% url 'pedidos' %}"
+            <li><a href="{% url 'pedidos_cliente' %}"
                     class="block py-2 px-4 hover:bg-gray-100 hover:underline hover:font-bold underline-offset-4 hover:decoration-4 hover:decoration-gray-500 rounded-lg">Pedidos</a>
             </li>
             <li><a href="{% url 'historial_compras' %}"
