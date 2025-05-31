@@ -51,7 +51,7 @@
                         <th class="py-2 sm:py-3 pr-4 sm:pr-6 text-gray-600 font-semibold align-top">Imagen:</th>
                         <td class="py-2 sm:py-3">
                             {% if producto.imagen %}
-                            <img src="{{ producto.imagen }}" alt="Imagen del producto"
+                            <img src="{{ producto.imagen.url }}" alt="Imagen del producto"
                                 class="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded border shadow mx-auto">
                             {% else %}
                             <span class="text-gray-400">Sin imagen</span>

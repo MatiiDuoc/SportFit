@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework import routers
 from SportFit_app.views import PedidoViewSet
+from django.contrib.auth import views as auth_views
 
 router = routers.DefaultRouter()
 router.register(r'api/pedidos', PedidoViewSet)
@@ -31,10 +32,22 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
-    path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
+    # path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('about/', views.about, name='about'),
     path('accounts/', include('allauth.urls')),
+    path('recuperar_contrasena/', auth_views.PasswordResetView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena.html'
+    ), name='password_reset'),
+    path('recuperar_contrasena/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_enviado.html'
+    ), name='password_reset_done'),
+    path('recuperar_contrasena/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_confirmar.html'
+    ), name='password_reset_confirm'),
+    path('recuperar_contrasena/completo/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_completo.html'
+    ), name='password_reset_complete'),
     #========================
     #CLIENTE
     #========================
@@ -46,7 +59,7 @@ urlpatterns = [
     path('client/checkout/entrega/', views.checkout_entrega, name='checkout_entrega'),
     path('client/checkout/pago/', views.checkout_pago, name='checkout_pago'),
     path('client/checkout/confirmacion/', views.checkout_confirmacion, name='checkout_confirmacion'),
-    path('checkout/exito/', views.compra_exitosa, name='compra_exitosa'),
+    path('checkout/exito/<int:pedido_id>/', views.compra_exitosa, name='compra_exitosa'),
     path('webpay/iniciar/<int:pedido_id>/', views.iniciar_pago_webpay, name='iniciar_pago_webpay'),
     path('webpay/retorno/', views.webpay_retorno, name='webpay_retorno'),
     path('paypal/iniciar/', views.iniciar_pago_paypal, name='iniciar_pago_paypal'),

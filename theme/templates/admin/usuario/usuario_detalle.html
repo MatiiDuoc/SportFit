@@ -1,3 +1,36 @@
-<!-- Plantilla para la vista 'usuario_detalle' -->
-<h1>Usuario_detalle</h1>
-<p>Esta es una plantilla generada automáticamente.</p>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detalles de usuario{% endblock %}
+
+{% block navbar %}
+{% include "components/admin_navbar.html" %}
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded shadow mt-10">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Detalles del Usuario</h2>
+    <div class="space-y-4 text-gray-700">
+        <div><span class="font-semibold">Nombre:</span> {{ usuario.nombre }} {{ usuario.apellido }}</div>
+        <div><span class="font-semibold">Correo:</span> {{ usuario.correo }}</div>
+        <div><span class="font-semibold">RUT:</span> {{ usuario.rut }}</div>
+        <div><span class="font-semibold">Teléfono:</span> {{ usuario.telefono }}</div>
+        <div><span class="font-semibold">Tipo de usuario:</span> {{ usuario.tipo_usuario|title }}</div>
+        {% if usuario.id_entrenador %}
+        <div><span class="font-semibold">ID Entrenador:</span> {{ usuario.id_entrenador }}</div>
+        {% endif %}
+        {% if usuario.id_plan %}
+        <div><span class="font-semibold">Plan de entrenamiento:</span> {{ usuario.id_plan }}</div>
+        {% endif %}
+    </div>
+    <div class="flex justify-between mt-8">
+        <a href="{% url 'usuarios' %}" class="text-blue-500 hover:underline">Volver a la lista</a>
+        <a href="{% url 'editar_usuario' usuario.id_usuario %}"
+            class="bg-lime-500 hover:bg-lime-600 text-black font-bold px-6 py-2 rounded shadow">
+            Editar
+        </a>
+    </div>
+</div>
+{% endblock %}

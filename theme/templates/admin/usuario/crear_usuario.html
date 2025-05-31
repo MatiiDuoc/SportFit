@@ -20,15 +20,15 @@
             {% csrf_token %}
             <div class="grid grid-cols-1 gap-6">
                 {% for field in form %}
-                <div>
+                <div id="field-{{ field.name }}">
                     <label for="{{ field.id_for_label }}" class="block text-base font-semibold text-gray-700 mb-2">
                         {{ field.label }}{% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
                     </label>
                     {% if field.name == 'foto' %}
-                    <div class="flex items
-                        <input type=" file" name="{{ field.name }}" id="{{ field.id_for_label }}"
-                        class="block w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition"
-                        accept="image/*">
+                    <div class="flex items">
+                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                            class="block w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition"
+                            accept="image/*">
                         <img id="preview" src="#" alt="Vista previa" class="hidden w-16 h-16 ml-4 rounded-full">
                     </div>
                     {% else %}
@@ -56,4 +56,27 @@
         </form>
     </div>
 </div>
+<script>
+    // Espera a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipoUsuario = document.getElementById('id_tipo_usuario');
+        const fieldEntrenador = document.getElementById('field-id_entrenador');
+        const fieldPlan = document.getElementById('field-id_plan');
+
+        function toggleFields() {
+            if (tipoUsuario.value === 'entrenador') {
+                if (fieldEntrenador) fieldEntrenador.style.display = 'none';
+                if (fieldPlan) fieldPlan.style.display = 'none';
+            } else {
+                if (fieldEntrenador) fieldEntrenador.style.display = '';
+                if (fieldPlan) fieldPlan.style.display = '';
+            }
+        }
+
+        if (tipoUsuario) {
+            tipoUsuario.addEventListener('change', toggleFields);
+            toggleFields(); // Ejecuta al cargar la página
+        }
+    });
+</script>
 {% endblock %}

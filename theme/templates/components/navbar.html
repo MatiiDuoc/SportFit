@@ -53,7 +53,7 @@
                         {% if carrito_productos %}
                         {% for producto in carrito_productos %}
                         <div class="flex items-center mb-2 last:mb-0">
-                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                            <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}"
                                 class="w-8 h-8 rounded mr-3 object-cover border">
                             <div class="flex-1">
                                 <span class="text-sm font-medium text-gray-800">{{ producto.nombre }}</span>
@@ -75,10 +75,10 @@
             <span class="font-semibold text-gray-800 mr-4 flex items-center gap-2">
                 Hola!
                 <strong>
-                    {% if usuario.nombre or usuario.apellido %}
-                        {{ usuario.nombre }} {{ usuario.apellido }}
-                    {% elif request.user.username %}
-                        {{ request.user.username }}
+                    {% if usuario and usuario.nombre|default_if_none:'' and usuario.apellido|default_if_none:'' %}
+                    {{ usuario.nombre }} {{ usuario.apellido }}
+                    {% elif request.user.is_authenticated %}
+                    {{ request.user.username }}
                     {% else %}
                     Usuario
                     {% endif %}

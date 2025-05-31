@@ -80,15 +80,16 @@
                             <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2">
                                 {% if primer_admin.first_name or primer_admin.last_name %}
-                                    {{ primer_admin.first_name }} {{ primer_admin.last_name }}
+                                {{ primer_admin.first_name }} {{ primer_admin.last_name }}
                                 {% else %}
-                                    {{ primer_admin.username }}
+                                {{ primer_admin.username }}
                                 {% endif %}
                             </td>
                             <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2">-</td>
                             <td class="px-4 py-2">
-                                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
+                                <span
+                                    class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
                                     Administrador (superusuario)
                                 </span>
                             </td>
@@ -105,15 +106,20 @@
                             <td class="px-4 py-2">{{ usuario.telefono }}</td>
                             <td class="px-4 py-2">
                                 {% if usuario.tipo_usuario == 'administrador' %}
-                                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Administrador</span>
+                                <span
+                                    class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Administrador</span>
                                 {% elif usuario.tipo_usuario == 'vendedor' %}
-                                <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">Vendedor</span>
+                                <span
+                                    class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">Vendedor</span>
                                 {% elif usuario.tipo_usuario == 'cliente' %}
-                                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Cliente</span>
+                                <span
+                                    class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Cliente</span>
                                 {% elif usuario.tipo_usuario == 'entrenador' %}
-                                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-semibold">Entrenador</span>
+                                <span
+                                    class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-semibold">Entrenador</span>
                                 {% else %}
-                                <span class="inline-block px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-semibold">Desconocido</span>
+                                <span
+                                    class="inline-block px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-semibold">Desconocido</span>
                                 {% endif %}
                             </td>
                             <td class="px-4 py-2">
@@ -126,21 +132,18 @@
                                         class="inline-flex items-center px-3 py-1.5 bg-yellow-400 text-white shadow hover:bg-yellow-500 transition text-xs font-semibold">
                                         <i class="fa-solid fa-pen mr-1"></i> Editar
                                     </a>
-                                    <form action="{% url 'eliminar_usuario' usuario.id_usuario %}" method="post"
-                                        class="inline">
-                                        {% csrf_token %}
-                                        <button type="submit"
-                                            class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white rounded shadow hover:bg-red-600 transition text-xs font-semibold"
-                                            onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
-                                            <i class="fa-solid fa-trash mr-1"></i> Eliminar
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white rounded shadow hover:bg-red-600 transition text-xs font-semibold btn-eliminar-usuario"
+                                        data-url="{% url 'eliminar_usuario' usuario.id_usuario %}">
+                                        <i class="fa-solid fa-trash mr-1"></i> Eliminar
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-gray-500">No hay usuarios registrados en el sistema.</td>
+                            <td colspan="6" class="text-center py-4 text-gray-500">No hay usuarios registrados en el
+                                sistema.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -151,4 +154,70 @@
         </section>
     </main>
 </div>
+
+<!-- Modal de confirmación para eliminar usuario -->
+<div id="modalEliminarUsuario"
+    class="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-200">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center relative animate-fade-in">
+        <button type="button" id="cancelarEliminar"
+            class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 focus:outline-none text-xl"
+            aria-label="Cerrar modal">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex flex-col items-center">
+            <div class="bg-red-100 text-red-600 rounded-full p-3 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">¿Eliminar usuario?</h2>
+            <p class="mb-6 text-gray-600">¿Estás seguro de que deseas eliminar este usuario?<br>
+                <span class="font-semibold text-red-600">Esta acción no se puede deshacer.</span>
+            </p>
+            <form id="formEliminarUsuario" method="post" class="w-full">
+                {% csrf_token %}
+                <div class="flex justify-center gap-4">
+                    <button type="button" id="cancelarEliminarFooter"
+                        class="bg-gray-200 px-5 py-2 rounded hover:bg-gray-300 font-semibold transition">Cancelar</button>
+                    <button type="submit"
+                        class="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700 font-semibold transition shadow">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95);}
+            to { opacity: 1; transform: scale(1);}
+        }
+        .animate-fade-in { animation: fade-in 0.2s ease; }
+    </style>
+</div>
+<script>
+    // Permite cerrar el modal con ambos botones de cancelar
+    document.querySelectorAll('#cancelarEliminar, #cancelarEliminarFooter').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.getElementById('modalEliminarUsuario').classList.add('hidden');
+        });
+    });
+    // Cierra el modal al presionar Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === "Escape") {
+            document.getElementById('modalEliminarUsuario').classList.add('hidden');
+        }
+    });
+</script>
+
+<script>
+    document.querySelectorAll('.btn-eliminar-usuario').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const modal = document.getElementById('modalEliminarUsuario');
+            const form = document.getElementById('formEliminarUsuario');
+            form.action = this.getAttribute('data-url');
+            modal.classList.remove('hidden');
+        });
+    });
+
+    document.getElementById('cancelarEliminar').addEventListener('click', function () {
+        document.getElementById('modalEliminarUsuario').classList.add('hidden');
+    });
+</script>
 {% endblock %}

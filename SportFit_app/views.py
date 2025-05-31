@@ -305,7 +305,6 @@ def direcciones(request):
 @login_required
 def checkout_usuario(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
-    # Validar perfil completo antes de continuar
     if not usuario or not usuario.rut or not usuario.nombre or not usuario.apellido or not usuario.telefono or not usuario.direccion:
         messages.info(request, "Debes completar tu perfil antes de comprar.")
         return redirect('completar_perfil')
@@ -321,6 +320,7 @@ def checkout_usuario(request):
         'usuario': usuario,
     })
     
+@login_required
 def checkout_entrega(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario:
@@ -336,6 +336,8 @@ def checkout_entrega(request):
         'usuario': usuario,
     })
 
+
+@login_required
 def checkout_pago(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario:
@@ -350,6 +352,7 @@ def checkout_pago(request):
     return render(request, 'client/checkout/pago.html', {
         'usuario': usuario,
     })
+
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -385,11 +388,6 @@ def checkout_confirmacion(request):
     # --------- DESCUENTO SABORLATINO ---------
     descuento = 0
     DESCUENTO_SABORLATINO = 0.10  # 10%
-    def es_usuario_saborlatino(rut_usuario):
-        usuarios_api = obtener_usuarios_api()
-        ruts_saborlatino = {u['numero_rut'] for u in usuarios_api}
-        return rut_usuario in ruts_saborlatino
-
     if usuario and es_usuario_saborlatino(usuario.rut):
         descuento = carrito_total * DESCUENTO_SABORLATINO
         carrito_total -= descuento
@@ -443,10 +441,12 @@ def checkout_confirmacion(request):
             detalles.delete()
             carrito.estado = 'finalizado'
             carrito.save()
-            request.session.pop('checkout_usuario', None)
-            request.session.pop('checkout_entrega', None)
-            request.session.pop('checkout_pago', None)
-        return redirect('compra_exitosa')
+        # Limpia la sesión después de crear el pedido
+        request.session.pop('checkout_usuario', None)
+        request.session.pop('checkout_entrega', None)
+        request.session.pop('checkout_pago', None)
+        # Redirige pasando el id del pedido
+        return redirect('compra_exitosa', pedido_id=pedido.id_pedido)
 
     es_usuario_saborlatino_flag = usuario and es_usuario_saborlatino(usuario.rut)
     return render(request, 'client/checkout/confirmacion.html', {
@@ -458,7 +458,7 @@ def checkout_confirmacion(request):
         'carrito_total': carrito_total,
         'descuento': descuento,
         'es_saborlatino': es_usuario_saborlatino_flag,
-})
+    })
     
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
@@ -607,6 +607,15 @@ def paypal_retorno(request):
         detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
         carrito_total = sum(d.precio * d.cantidad for d in detalles)
 
+        # Verifica si ya existe un pedido para este carrito y usuario
+        pedido_existente = Pedido.objects.filter(carrito=carrito, usuario=usuario, estado='entregado').first()
+        if pedido_existente:
+            # Limpia la sesión si es necesario
+            request.session.pop('checkout_usuario', None)
+            request.session.pop('checkout_entrega', None)
+            request.session.pop('checkout_pago', None)
+            return redirect('compra_exitosa', pedido_id=pedido_existente.id_pedido)
+
         # Validar stock antes de crear el pedido
         for detalle in detalles:
             producto = detalle.id_producto
@@ -649,9 +658,11 @@ def paypal_retorno(request):
             request.session.pop('checkout_usuario', None)
             request.session.pop('checkout_entrega', None)
             request.session.pop('checkout_pago', None)
-        return redirect('compra_exitosa')
+        return redirect('compra_exitosa', pedido_id=pedido.id_pedido)
     else:
-        return render(request, 'paypal/error.html', {'error': payment.error})
+        # Mensaje de error más claro
+        error_msg = payment.error.get('message', 'No se pudo procesar el pago. Intenta nuevamente.')
+        return render(request, 'paypal/error.html', {'error': error_msg})
     
 @login_required
 def completar_perfil(request):
@@ -712,8 +723,13 @@ def detalle_pedido(request, pedido_id):
 def paypal_cancelado(request):
     return render(request, 'paypal/cancelado.html')
 
-def compra_exitosa(request):
-    return render(request, 'client/checkout/compra_exitosa.html')
+@login_required
+def compra_exitosa(request, pedido_id):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
+    if pedido.estado != 'entregado':
+        return redirect('home')
+    return render(request, 'client/checkout/compra_exitosa.html', {'pedido': pedido})
 
 
 @login_required
@@ -830,9 +846,10 @@ def login_view(request):
             return render(request, 'login/login.html', {'error': 'Credenciales inválidas'})
     return render(request, 'login/login.html')
 
-def recuperar_contrasena(request):
-    # Vista para recuperar la contraseña
-    return render(request, 'recuperar_contrasena/recuperar_contrasena.html')
+# def recuperar_contrasena(request):
+#     # Vista para recuperar la contraseña
+#     return render(request, 'recuperar_contrasena/recuperar_contrasena.html')
+
 def cambiar_contrasena(request):
     # Vista para cambiar la contraseña
     return render(request, 'cambiar_contrasena.html')
@@ -887,7 +904,7 @@ def contratar_plan(request):
         if form.is_valid():
             form.save()
             messages.success(request, "¡Plan contratado correctamente!")
-            return redirect('plan_cliente')
+            return redirect('mis_planes')
     else:
         form = ContratarPlanForm(instance=usuario)
 
@@ -1005,27 +1022,43 @@ def usuarios(request):
     }
     return render(request, 'admin/usuario/usuarios.html', context)
 
-def usuario_detalle(request):
-    # Vista para mostrar detalles de un usuario
-    return render(request, 'usuario/usuario_detalle.html', {})
+def usuario_detalle(request, id):
+    usuario = get_object_or_404(Usuario, pk=id)
+    return render(request, 'admin/usuario/usuario_detalle.html', {'usuario': usuario})
 
 @login_required
 def editar_usuario(request, id):
     usuario = get_object_or_404(Usuario, pk=id)
+    campos_ocultos = ['tipo_usuario', 'contrasena', 'id_entrenador', 'rut', 'id_plan']
     if request.method == 'POST':
-        form = Usuario(request.POST, instance=usuario)
+        form = UsuarioForm(request.POST, request.FILES, instance=usuario)
+        if usuario.tipo_usuario == 'entrenador':
+            for field in campos_ocultos:
+                form.fields.pop(field, None)
+        else:
+            form.fields.pop('contrasena', None)
         if form.is_valid():
             form.save()
+            messages.success(request, "Usuario editado correctamente.")
             return redirect('usuarios')
     else:
-        form = Usuario(instance=usuario)
-    return
+        form = UsuarioForm(instance=usuario)
+        if usuario.tipo_usuario == 'entrenador':
+            for field in campos_ocultos:
+                form.fields.pop(field, None)
+        else:
+            form.fields.pop('contrasena', None)
+    return render(request, 'admin/usuario/editar_usuario.html', {'form': form, 'usuario': usuario})
 
 @require_POST
 @login_required
 def eliminar_usuario(request, id):
     usuario = get_object_or_404(Usuario, pk=id)
+    # Elimina también el usuario de auth_user si existe
+    user = User.objects.filter(username=usuario.correo).first()
     usuario.delete()
+    if user:
+        user.delete()
     return redirect('usuarios')
 
 @login_required
@@ -1202,17 +1235,17 @@ def eliminar_marca(request):
 @csrf_exempt
 @login_required
 def crear_marca_ajax(request):
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Acceso no autorizado.'})
     if request.method == 'POST':
-        descripcion = request.POST.get('brand_description')
-        if descripcion:
-            if Marca.objects.filter(descripcion=descripcion).exists():
-                return JsonResponse({'success': False, 'error': 'Ya existe una marca con esa descripción.'})
+        descripcion = request.POST.get('brand_description', '').strip()
+        if not descripcion:
+            return JsonResponse({'success': False, 'error': 'La descripción es obligatoria.'})
+        try:
+            # Cambia esto según tu modelo
             Marca.objects.create(descripcion=descripcion)
             return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'Todos los campos son obligatorios.'})
+        except Exception as e:
+            # Puedes filtrar por IntegrityError si quieres
+            return JsonResponse({'success': False, 'error': 'Ya existe una marca con esa descripción.'})
     return JsonResponse({'success': False, 'error': 'Método no permitido.'})
 
 @csrf_exempt
@@ -1424,16 +1457,13 @@ def editar_email(request):
 # -------------------- Entrenadores --------------------
 @login_required
 def dashboard_entrenador(request):
-    # Datos de ejemplo (pueden venir de la base de datos)
-    ventas = [1200, 1900, 3000, 5000]
-    semanas = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
-
-    # Pasar los datos al contexto
-    context = {
-        'ventas': json.dumps(ventas),  # Convertir a JSON para usar en JavaScript
-        'semanas': json.dumps(semanas),
-    }
-    return render(request, 'entrenador/dashboard/dashboard.html', context)
+    entrenador = Usuario.objects.get(correo=request.user.email)
+    clientes_asignados = Usuario.objects.filter(id_entrenador=entrenador).count()
+    planes_creados = PlanEntrenamiento.objects.filter(id_entrenador=entrenador).count()
+    return render(request, 'entrenador/dashboard/dashboard.html', {
+        'clientes_asignados': clientes_asignados,
+        'plan_entrenamiento': planes_creados,
+    })
 
 @login_required
 def clientes_entrenador(request):
