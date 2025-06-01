@@ -1,0 +1,9 @@
+('en_curso', 'En curso'),
+('procesando', 'Procesando'),
+('enviado', 'Enviado'),
+('entregado', 'Entregado'),
+('cancelado', 'Cancelado'),
+
+http://localhost:8000/api/pedidos/
+http://localhost:8000/api/pedidos/?tipo_entrega=Despacho
+http://localhost:8000/api/pedidos/12/

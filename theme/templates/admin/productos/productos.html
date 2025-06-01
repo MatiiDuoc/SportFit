@@ -69,7 +69,8 @@ Gestión de productos
                     {% for producto in productos %}
                     <tr class="border-b hover:bg-blue-50 transition">
                         <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle">{{ producto.id_producto }}</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle truncate max-w-xs">{{ producto.nombre_producto }}</td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle truncate max-w-xs">{{
+                            producto.nombre_producto }}</td>
                         <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle">{{ producto.stock }}</td>
                         <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle">${{ producto.precio|floatformat:0 }}
                         </td>
@@ -137,14 +138,22 @@ Gestión de productos
             document.getElementById('confirmModal').classList.remove('hidden');
         });
     });
-    document.getElementById('cancelDelete').onclick = function () {
-        document.getElementById('confirmModal').classList.add('hidden');
-    };
-    document.getElementById('confirmDelete').onclick = function (e) {
-        e.preventDefault();
-        var form = document.getElementById('deleteForm');
-        form.setAttribute('action', deleteUrl);
-        form.submit();
-    };
+
+    const cancelDeleteBtn = document.getElementById('cancelDelete');
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.onclick = function () {
+            document.getElementById('confirmModal').classList.add('hidden');
+        };
+    }
+
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.onclick = function (e) {
+            e.preventDefault();
+            var form = document.getElementById('deleteForm');
+            form.setAttribute('action', deleteUrl);
+            form.submit();
+        };
+    }
 </script>
 {% endblock %}

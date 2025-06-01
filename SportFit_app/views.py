@@ -133,10 +133,10 @@ def about(request):
 @login_required
 def pedidos_cliente(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
-    if not usuario:
-        messages.error(request, "Debes iniciar sesión para ver tus pedidos.")
-        return redirect('login')
-    pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    pedidos_list = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    paginator = Paginator(pedidos_list, 10)  
+    page_number = request.GET.get('page')
+    pedidos = paginator.get_page(page_number)
     return render(request, 'client/pedidos.html', {'pedidos': pedidos})
 
 def home(request):
@@ -352,7 +352,6 @@ def checkout_pago(request):
     return render(request, 'client/checkout/pago.html', {
         'usuario': usuario,
     })
-
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -412,6 +411,9 @@ def checkout_confirmacion(request):
                 producto.stock -= detalle.cantidad
                 producto.save()
 
+            # Determina el estado según el tipo de entrega
+            estado_pedido = 'procesando' if entrega.get('tipo_entrega') == 'envio' else 'entregado'
+
             pedido = Pedido.objects.create(
                 usuario=usuario,
                 carrito=carrito,
@@ -419,7 +421,7 @@ def checkout_confirmacion(request):
                 tipo_entrega=entrega.get('tipo_entrega', ''),
                 metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
-                estado='entregado'  # o el estado que consideres venta realizada
+                estado=estado_pedido
             )
 
             # Crear la entrega asociada al pedido
@@ -459,7 +461,6 @@ def checkout_confirmacion(request):
         'descuento': descuento,
         'es_saborlatino': es_usuario_saborlatino_flag,
     })
-    
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
     print("===> Entrando a iniciar_pago_webpay")
@@ -524,6 +525,9 @@ def webpay_retorno(request):
                 producto.stock -= detalle.cantidad
                 producto.save()
 
+            # Determina el estado según el tipo de entrega
+            estado_pedido = 'procesando' if entrega.get('tipo_entrega') == 'envio' else 'entregado'
+
             pedido = Pedido.objects.create(
                 usuario=usuario,
                 carrito=carrito,
@@ -531,10 +535,9 @@ def webpay_retorno(request):
                 tipo_entrega=entrega.get('tipo_entrega', ''),
                 metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
-                estado='entregado'
+                estado=estado_pedido
             )
 
-            # Crear la venta asociada
             Venta.objects.create(
                 fecha=timezone.now(),
                 monto_total=carrito_total,
@@ -548,17 +551,10 @@ def webpay_retorno(request):
             request.session.pop('checkout_usuario', None)
             request.session.pop('checkout_entrega', None)
             request.session.pop('checkout_pago', None)
-        return redirect('compra_exitosa')
+        return redirect('compra_exitosa', pedido_id=pedido.id_pedido)
     else:
         error_msg = response.get('status', 'Pago no autorizado')
         return render(request, 'webpay/error.html', {'error': error_msg})
-    
-#paypal
-paypalrestsdk.configure({
-    "mode": "sandbox",
-    "client_id": os.getenv("PAYPAL_CLIENT_ID"),
-    "client_secret": os.getenv("PAYPAL_CLIENT_SECRET")
-})
 
 def iniciar_pago_paypal(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -610,7 +606,6 @@ def paypal_retorno(request):
         # Verifica si ya existe un pedido para este carrito y usuario
         pedido_existente = Pedido.objects.filter(carrito=carrito, usuario=usuario, estado='entregado').first()
         if pedido_existente:
-            # Limpia la sesión si es necesario
             request.session.pop('checkout_usuario', None)
             request.session.pop('checkout_entrega', None)
             request.session.pop('checkout_pago', None)
@@ -629,6 +624,9 @@ def paypal_retorno(request):
                 producto.stock -= detalle.cantidad
                 producto.save()
 
+            # Determina el estado según el tipo de entrega
+            estado_pedido = 'procesando' if entrega.get('tipo_entrega') == 'envio' else 'entregado'
+
             pedido = Pedido.objects.create(
                 usuario=usuario,
                 carrito=carrito,
@@ -636,7 +634,7 @@ def paypal_retorno(request):
                 tipo_entrega=entrega.get('tipo_entrega', ''),
                 metodo_pago=pago.get('metodo_pago', ''),
                 total=carrito_total,
-                estado='entregado'
+                estado=estado_pedido
             )
 
             entrega_obj = Entrega.objects.create(
@@ -660,7 +658,6 @@ def paypal_retorno(request):
             request.session.pop('checkout_pago', None)
         return redirect('compra_exitosa', pedido_id=pedido.id_pedido)
     else:
-        # Mensaje de error más claro
         error_msg = payment.error.get('message', 'No se pudo procesar el pago. Intenta nuevamente.')
         return render(request, 'paypal/error.html', {'error': error_msg})
     
@@ -727,7 +724,7 @@ def paypal_cancelado(request):
 def compra_exitosa(request, pedido_id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     pedido = get_object_or_404(Pedido, id_pedido=pedido_id, usuario=usuario)
-    if pedido.estado != 'entregado':
+    if pedido.estado not in ['entregado', 'procesando']:
         return redirect('home')
     return render(request, 'client/checkout/compra_exitosa.html', {'pedido': pedido})
 
@@ -735,7 +732,10 @@ def compra_exitosa(request, pedido_id):
 @login_required
 def pedidos(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
-    pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    pedidos_list = Pedido.objects.filter(usuario=usuario).order_by('-fecha_creacion')
+    paginator = Paginator(pedidos_list, 5)  
+    page_number = request.GET.get('page')
+    pedidos = paginator.get_page(page_number)
     return render(request, 'client/pedidos.html', {'pedidos': pedidos})
 # -------------------- Login --------------------
 def logout_view(request):
@@ -853,6 +853,7 @@ def login_view(request):
 def cambiar_contrasena(request):
     # Vista para cambiar la contraseña
     return render(request, 'cambiar_contrasena.html')
+
 def productos_cliente(request):
     productos = Producto.objects.all()
     marcas = Marca.objects.all()
@@ -876,11 +877,15 @@ def productos_cliente(request):
             descripcion__icontains=search
         )
 
+    # PAGINACIÓN
+    paginator = Paginator(productos, 5)  # 12 productos por página (ajusta a tu gusto)
+    page_number = request.GET.get('page')
+    productos_page = paginator.get_page(page_number)
+
     return render(request, 'client/productos.html', {
-        'productos': productos,
+        'productos': productos_page,
         'marcas': marcas,
     })
-
 
 @login_required
 def contratar_plan(request):

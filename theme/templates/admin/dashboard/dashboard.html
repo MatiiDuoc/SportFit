@@ -52,13 +52,13 @@ Dashboard Administrador
 </div>
 
 <script>
-    const toggleSidebar = document.getElementById('toggleSidebar');
-    const adminSidebar = document.getElementById('adminSidebar');
-    const mainContent = document.getElementById('mainContent');
-
-    toggleSidebar.addEventListener('click', () => {
-        adminSidebar.classList.toggle('-translate-x-full');
-    });
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('adminSidebar');
+    if (toggleSidebarBtn && sidebar) {
+        toggleSidebarBtn.addEventListener('click', function () {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+    }
 </script>
 {% endblock %}
 
