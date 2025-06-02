@@ -64,7 +64,7 @@
         const fieldPlan = document.getElementById('field-id_plan');
 
         function toggleFields() {
-            if (tipoUsuario.value === 'entrenador') {
+            if (tipoUsuario.value === 'entrenador' || tipoUsuario.value === 'vendedor' || tipoUsuario.value === 'administrador') {
                 if (fieldEntrenador) fieldEntrenador.style.display = 'none';
                 if (fieldPlan) fieldPlan.style.display = 'none';
             } else {

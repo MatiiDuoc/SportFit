@@ -73,12 +73,12 @@
 
             {% if request.user.is_authenticated %}
             <span class="font-semibold text-gray-800 mr-4 flex items-center gap-2">
-                Hola!
+                Hola!,
                 <strong>
-                    {% if usuario and usuario.nombre|default_if_none:'' and usuario.apellido|default_if_none:'' %}
+                    {% if usuario and usuario.nombre and usuario.apellido %}
                     {{ usuario.nombre }} {{ usuario.apellido }}
                     {% elif request.user.is_authenticated %}
-                    {{ request.user.username }}
+                    {{ request.user.get_full_name|default:request.user.username }}
                     {% else %}
                     Usuario
                     {% endif %}

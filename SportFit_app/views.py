@@ -352,6 +352,7 @@ def checkout_pago(request):
     return render(request, 'client/checkout/pago.html', {
         'usuario': usuario,
     })
+    
 @login_required
 def checkout_confirmacion(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -423,6 +424,15 @@ def checkout_confirmacion(request):
                 total=carrito_total,
                 estado=estado_pedido
             )
+
+            # Copiar detalles del carrito a DetallePedido (historial)
+            for detalle in detalles:
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    producto=detalle.id_producto,
+                    cantidad=detalle.cantidad,
+                    precio=detalle.precio
+                )
 
             # Crear la entrega asociada al pedido
             entrega_obj = Entrega.objects.create(
@@ -525,7 +535,6 @@ def webpay_retorno(request):
                 producto.stock -= detalle.cantidad
                 producto.save()
 
-            # Determina el estado según el tipo de entrega
             estado_pedido = 'procesando' if entrega.get('tipo_entrega') == 'envio' else 'entregado'
 
             pedido = Pedido.objects.create(
@@ -537,6 +546,15 @@ def webpay_retorno(request):
                 total=carrito_total,
                 estado=estado_pedido
             )
+
+            # Copiar detalles del carrito a DetallePedido
+            for detalle in detalles:
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    producto=detalle.id_producto,
+                    cantidad=detalle.cantidad,
+                    precio=detalle.precio
+                )
 
             Venta.objects.create(
                 fecha=timezone.now(),
@@ -591,6 +609,7 @@ def iniciar_pago_paypal(request):
     else:
         print("Error al crear el pago PayPal:", payment.error)
         return render(request, 'paypal/error.html', {'error': payment.error})
+    
 def paypal_retorno(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
@@ -624,7 +643,6 @@ def paypal_retorno(request):
                 producto.stock -= detalle.cantidad
                 producto.save()
 
-            # Determina el estado según el tipo de entrega
             estado_pedido = 'procesando' if entrega.get('tipo_entrega') == 'envio' else 'entregado'
 
             pedido = Pedido.objects.create(
@@ -636,6 +654,15 @@ def paypal_retorno(request):
                 total=carrito_total,
                 estado=estado_pedido
             )
+
+            # Copiar detalles del carrito a DetallePedido
+            for detalle in detalles:
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    producto=detalle.id_producto,
+                    cantidad=detalle.cantidad,
+                    precio=detalle.precio
+                )
 
             entrega_obj = Entrega.objects.create(
                 direccion_entrega=entrega.get('direccion_entrega', ''),
@@ -839,7 +866,7 @@ def login_view(request):
             elif usuario_extra.tipo_usuario == 'vendedor':
                 return redirect('dashboard_vendedor')
             elif usuario_extra.tipo_usuario == 'cliente':
-                return redirect('productos_cliente')
+                return redirect('home')
             return redirect('home')
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
@@ -920,7 +947,9 @@ def contratar_plan(request):
     })
 #----------------------------------
 # Administrador
-#----------------------------------@login_required
+#----------------------------------
+
+@login_required
 def dashboard_administrador(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
     if not usuario or usuario.tipo_usuario != 'administrador':
@@ -932,7 +961,7 @@ def dashboard_administrador(request):
     # Usuarios activos (puedes definirlo como usuarios con pedidos, o simplemente todos)
     usuarios_activos = Usuario.objects.count()
     # Órdenes pendientes (estado pendiente)
-    ordenes_pendientes = Pedido.objects.filter(estado='pendiente').count()
+    ordenes_pendientes = Pedido.objects.filter(estado__in=['procesando', 'pendiente']).count()
     # Productos en stock (suma de stock de todos los productos)
     productos_en_stock = Producto.objects.aggregate(total=Sum('stock'))['total'] or 0
     fecha_actual = timezone.now().strftime('%Y-%m-%d')
@@ -1237,6 +1266,7 @@ def editar_marca(request):
 def eliminar_marca(request):
     # Vista para eliminar una marca
     return render(request, 'marcas/eliminar_marca.html', {})
+
 @csrf_exempt
 @login_required
 def crear_marca_ajax(request):
@@ -1244,13 +1274,17 @@ def crear_marca_ajax(request):
         descripcion = request.POST.get('brand_description', '').strip()
         if not descripcion:
             return JsonResponse({'success': False, 'error': 'La descripción es obligatoria.'})
+        # Validar existencia ignorando mayúsculas/minúsculas y espacios
+        existe = Marca.objects.filter(descripcion__iexact=descripcion).exists()
+        if existe:
+            return JsonResponse({'success': False, 'error': 'Ya existe una marca con esa descripción.'})
         try:
-            # Cambia esto según tu modelo
             Marca.objects.create(descripcion=descripcion)
             return JsonResponse({'success': True})
-        except Exception as e:
-            # Puedes filtrar por IntegrityError si quieres
+        except IntegrityError:
             return JsonResponse({'success': False, 'error': 'Ya existe una marca con esa descripción.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método no permitido.'})
 
 @csrf_exempt
@@ -1347,8 +1381,8 @@ def eliminar_proveedor_ajax(request, id):
 
 # -------------------- Órdenes --------------------
 def ordenes(request):
-    pedidos = Pedido.objects.select_related('usuario', 'carrito').order_by('-fecha_creacion')
-    clientes = Usuario.objects.filter(pedido__isnull=False).distinct()    # Filtros
+    pedidos = Pedido.objects.select_related('usuario').prefetch_related('detallepedido_set', 'detallepedido_set__producto').order_by('-fecha_creacion')
+    clientes = Usuario.objects.filter(pedido__isnull=False).distinct()
     client = request.GET.get('client')
     order_date = request.GET.get('order_date')
     status = request.GET.get('status')
@@ -1376,6 +1410,14 @@ def ordenes(request):
         'pedidos': pedidos,
         'estados': estados,
         'clientes': clientes,
+    })
+
+def admin_detalle_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    detalles = pedido.carrito.detallecarrito_set.select_related('id_producto').all()
+    return render(request, 'admin/ordenes/detalle_pedido_modal.html', {
+        'pedido': pedido,
+        'detalles': detalles,
     })
 
 def orden_detalle(request):
@@ -1695,6 +1737,7 @@ def editar_perfil_entrenador(request):
         'form': form,
         'entrenador': entrenador,
     })
+    
 @login_required
 def editar_cliente_entrenador(request, id):
     usuario = Usuario.objects.filter(correo=request.user.email).first()

@@ -15,7 +15,12 @@
             <strong>Estado:</strong> {{ compra.estado }}
         </li>
         <li style="margin-bottom: 12px;">
-            <strong>Comentario:</strong> {{ compra.observacion }}
+            <strong>Comentario:</strong>
+            {% if compra.observacion %}
+            {{ compra.observacion }}
+            {% else %}
+            no haz comentado aun esta compra que realizaste
+            {% endif %}
         </li>
     </ul>
 </div>

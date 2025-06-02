@@ -864,6 +864,9 @@
   .border-blue-400 {
     border-color: var(--color-blue-400);
   }
+  .border-blue-500 {
+    border-color: var(--color-blue-500);
+  }
   .border-gray-200 {
     border-color: var(--color-gray-200);
   }
@@ -900,6 +903,9 @@
   .bg-black {
     background-color: var(--color-black);
   }
+  .bg-blue-50 {
+    background-color: var(--color-blue-50);
+  }
   .bg-blue-100 {
     background-color: var(--color-blue-100);
   }
@@ -908,6 +914,9 @@
   }
   .bg-blue-600 {
     background-color: var(--color-blue-600);
+  }
+  .bg-gray-50 {
+    background-color: var(--color-gray-50);
   }
   .bg-gray-100 {
     background-color: var(--color-gray-100);
@@ -1126,6 +1135,9 @@
   .pl-2 {
     padding-left: calc(var(--spacing) * 2);
   }
+  .pl-6 {
+    padding-left: calc(var(--spacing) * 6);
+  }
   .text-center {
     text-align: center;
   }
@@ -1143,6 +1155,9 @@
   }
   .align-top {
     vertical-align: top;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
   }
   .text-2xl {
     font-size: var(--text-2xl);
@@ -1216,6 +1231,9 @@
   }
   .text-black {
     color: var(--color-black);
+  }
+  .text-blue-300 {
+    color: var(--color-blue-300);
   }
   .text-blue-400 {
     color: var(--color-blue-400);
@@ -1407,6 +1425,12 @@
   @media (hover: hover) {
     .group-hover\:block:is(:where(.group):hover *) {
       display: block;
+    }
+  }
+  @media (hover: hover) {
+    .group-hover\:font-semibold:is(:where(.group):hover *) {
+      --tw-font-weight: var(--font-weight-semibold);
+      font-weight: var(--font-weight-semibold);
     }
   }
   .last\:mb-0:last-child {
@@ -1660,11 +1684,17 @@
   .focus\:ring-blue-200:focus {
     --tw-ring-color: var(--color-blue-200);
   }
+  .focus\:ring-blue-300:focus {
+    --tw-ring-color: var(--color-blue-300);
+  }
   .focus\:ring-blue-400:focus {
     --tw-ring-color: var(--color-blue-400);
   }
   .focus\:ring-blue-500:focus {
     --tw-ring-color: var(--color-blue-500);
+  }
+  .focus\:ring-gray-400:focus {
+    --tw-ring-color: var(--color-gray-400);
   }
   .focus\:ring-green-400:focus {
     --tw-ring-color: var(--color-green-400);
@@ -1717,6 +1747,11 @@
   @media (width >= 40rem) {
     .sm\:mb-10 {
       margin-bottom: calc(var(--spacing) * 10);
+    }
+  }
+  @media (width >= 40rem) {
+    .sm\:ml-2 {
+      margin-left: calc(var(--spacing) * 2);
     }
   }
   @media (width >= 40rem) {
@@ -1783,6 +1818,11 @@
   @media (width >= 40rem) {
     .sm\:justify-between {
       justify-content: space-between;
+    }
+  }
+  @media (width >= 40rem) {
+    .sm\:gap-0 {
+      gap: calc(var(--spacing) * 0);
     }
   }
   @media (width >= 40rem) {

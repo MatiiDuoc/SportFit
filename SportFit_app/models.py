@@ -324,3 +324,14 @@ class TipoDocumento(models.Model):
 
     class Meta:
         db_table = 'tipo_documento'
+        
+class DetallePedido(models.Model):
+    id_detalle_pedido = models.AutoField(primary_key=True)
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)  # Relación al pedido
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)  # Relación al producto
+    cantidad = models.IntegerField()
+    precio = models.IntegerField()
+    
+    class Meta:
+        db_table = 'detalle_pedido'
+        managed = False  # <--- Agrega esto

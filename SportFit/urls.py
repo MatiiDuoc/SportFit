@@ -131,6 +131,7 @@ urlpatterns = [
     path('admin/ordenes/', views.ordenes, name='ordenes'),
     path('admin/ordenes/<int:id>/', views.orden_detalle, name='orden_detalle'),
     path('admin/ordenes/editar/<int:id>/', views.editar_orden, name='editar_orden'),
+    path('admin/ordenes/detalle/<int:pedido_id>/', views.admin_detalle_pedido, name='admin_detalle_pedido'),
     # perfil
     path('admin/perfil/', views.perfil, name='perfil'),
     path('admin/perfil/editar/', views.editar_perfil, name='editar_perfil'),
