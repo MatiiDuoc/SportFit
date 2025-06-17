@@ -8,51 +8,69 @@ Historial de Compras - SportFit
 {% block content %}
 <div class="max-w-4xl mx-auto mt-8">
     <h1 class="text-2xl font-bold mb-6">Historial de Compras</h1>
-    {% if compras %}
+    {% if compras_con_productos %}
     <div class="overflow-x-auto">
-        <table class="min-w-full border border-gray-300 rounded-lg shadow text-sm">
+        <table class="min-w-full border border-gray-300 rounded-lg shadow-lg text-sm bg-white">
             <thead>
-                <tr class="bg-gray-100 text-gray-700">
-                    <th class="px-4 py-2">N° Compra</th>
-                    <th class="px-4 py-2">Fecha</th>
-                    <th class="px-4 py-2">Total</th>
-                    <th class="px-4 py-2">Estado</th>
-                    <th class="px-4 py-2">Comentario</th>
-                    <th class="px-4 py-2">Acciones</th>
+                <tr class="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-800">
+                    <th class="px-4 py-3 text-left font-semibold">N° Compra</th>
+                    <th class="px-4 py-3 text-left font-semibold">Fecha</th>
+                    <th class="px-4 py-3 text-left font-semibold">Total</th>
+                    <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                    <th class="px-4 py-3 text-left font-semibold">Productos y Comentarios</th>
+                    <th class="px-4 py-3 text-left font-semibold">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for compra in compras %}
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-4 py-2">{{ compra.id_pedido }}</td>
-                    <td class="px-4 py-2">{{ compra.fecha_creacion|date:"d/m/Y H:i" }}</td>
-                    <td class="px-4 py-2">${{ compra.total|floatformat:0 }}</td>
-                    <td class="px-4 py-2">
-                        <span class="px-2 py-1 rounded bg-green-200 text-green-800">
-                            {{ compra.estado|default:"Completada" }}
+                {% for compra_dict in compras_con_productos %}
+                <tr class="hover:bg-blue-50 border-b transition-colors duration-200">
+                    <td class="px-4 py-3 align-top">{{ compra_dict.compra.id_pedido }}</td>
+                    <td class="px-4 py-3 align-top">{{ compra_dict.compra.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-3 align-top font-bold text-green-700">${{ compra_dict.compra.total|floatformat:0 }}</td>
+                    <td class="px-4 py-3 align-top">
+                        <span class="px-2 py-1 rounded-full 
+                        {% if compra_dict.compra.estado == 'Pendiente' %}
+                            bg-yellow-200 text-yellow-800
+                        {% elif compra_dict.compra.estado == 'Cancelada' %}
+                            bg-red-200 text-red-800
+                        {% else %}
+                            bg-green-200 text-green-800
+                        {% endif %}
+                        ">
+                            {{ compra_dict.compra.estado|default:"Completada" }}
                         </span>
                     </td>
-                    <td class="px-4 py-2">
-                        {% if compra.observacion %}
-                        <span class="text-gray-700">{{ compra.observacion }}</span>
+                    <td class="px-4 py-3">
+                        {% if compra_dict.compra.observacion %}
+                        <div class="text-gray-700 italic mb-1">"{{ compra_dict.compra.observacion }}"</div>
                         {% else %}
-                        {% if compra.id_pedido %}
-                        <form method="post" action="{% url 'agregar_observacion' compra.id_pedido %}">
+                        <form method="post" action="{% url 'agregar_observacion' compra_dict.compra.id_pedido %}">
                             {% csrf_token %}
-                            <input type="text" name="observacion" class="border rounded px-2 py-1 text-xs"
-                                placeholder="Deja tu comentario">
-                            <button type="submit"
-                                class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs">Guardar</button>
+                            <textarea name="observacion" required class="w-full border rounded p-2 mb-2"></textarea>
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Comentar
+                                compra</button>
                         </form>
                         {% endif %}
-                        {% endif %}
                     </td>
-                    <td class="px-4 py-2">
-                        <a href="{% url 'detalle_compra' compra.id_pedido %}" class="text-blue-600 hover:underline">Ver
+                    <td class="px-4 py-3 align-top">
+                        <a href="{% url 'detalle_compra' compra_dict.compra.id_pedido %}"
+                            class="inline-block bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded transition-colors">Ver
                             Detalle</a>
                     </td>
                 </tr>
                 {% endfor %}
+                {% if messages %}
+                <div class="container mx-auto mt-4">
+                    {% for message in messages %}
+                    <div class="px-4 py-2 mb-2 rounded 
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800
+                        {% elif message.tags == 'error' %}bg-red-100 text-red-800
+                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </tbody>
         </table>
     </div>

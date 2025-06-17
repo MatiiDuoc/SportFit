@@ -15,11 +15,12 @@ from dotenv import load_dotenv
 import os
 load_dotenv()  # Carga las variables del archivo .env
 
-ORACLE_HOST = os.getenv('ORACLE_HOST', 'localhost')
-ORACLE_PORT = os.getenv('ORACLE_PORT', '1521')
-ORACLE_SERVICE = os.getenv('ORACLE_SERVICE', 'XE')
-ORACLE_USER = os.getenv('ORACLE_USER', 'SportFit')
-ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'SportFit')
+# Carga las credenciales de Oracle desde variables de entorno (.env)
+ORACLE_HOST = os.getenv('ORACLE_HOST')
+ORACLE_PORT = os.getenv('ORACLE_PORT')
+ORACLE_SERVICE = os.getenv('ORACLE_SERVICE')
+ORACLE_USER = os.getenv('ORACLE_USER')
+ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,8 +58,15 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     'rest_framework.authtoken',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
 ]
 
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/'
 TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
@@ -74,9 +82,29 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # <-- AGREGA ESTA LÍNEA
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'SportFit_app.backends.EmailBackend',  # Ruta a tu backend
+    'django.contrib.auth.backends.ModelBackend',
+]
 
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"  # O "mandatory" si quieres forzar verificación
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        'SCOPE': [
+            'user:email',
+        ],
+    }
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ROOT_URLCONF = 'SportFit.urls'
 

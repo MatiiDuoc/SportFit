@@ -18,7 +18,7 @@ Productos - SportFit
         <div class="col-span-full text-center text-gray-500">No se encontraron productos.</div>
         {% endfor %}
     </div>
-    {% include "components/paginator.html" %}
+    {% include "components/paginator.html" with page_obj=productos %}
 </div>
 
 <script>

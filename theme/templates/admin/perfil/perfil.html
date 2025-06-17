@@ -24,11 +24,11 @@ Perfil de Usuario
             <!-- Información personal -->
             <div>
                 <h2 class="text-lg font-semibold text-gray-700 mb-2">Información Personal</h2>
-                <p><strong>Nombre:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                <p><strong>Nombre:</strong> {{ user.first_name }} {{ user.last_name|default:"No registrado" }}</p>
                 <p><strong>Correo Electrónico:</strong> {{ user.email }}</p>
                 <p><strong>Teléfono:</strong> {{ usuario_extra.telefono|default:"No registrado" }}</p>
                 <p><strong>Dirección:</strong> {{ usuario_extra.direccion|default:"No registrada" }}</p>
-                <p><strong>RUT:</strong> {{ usuario_extra.rut|default:"-" }}</p>
+                <p><strong>RUT:</strong> {{ usuario_extra.rut|default:"No registrado" }}</p>
             </div>
             <!-- Información adicional -->
             <div>

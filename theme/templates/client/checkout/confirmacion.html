@@ -6,30 +6,22 @@
     <!-- Línea de tiempo de pasos -->
     <div class="flex justify-center items-center mb-12">
         <div class="flex flex-col items-center">
-            <div
-                class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">
-                1</div>
+            <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">1</div>
             <span class="mt-2 text-green-500 font-semibold text-sm sm:text-base">Tus datos</span>
         </div>
         <div class="flex-grow border-t-2 border-green-500 mx-4"></div>
         <div class="flex flex-col items-center">
-            <div
-                class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">
-                2</div>
+            <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">2</div>
             <span class="mt-2 text-green-500 font-semibold text-sm sm:text-base">Forma de entrega</span>
         </div>
         <div class="flex-grow border-t-2 border-green-500 mx-4"></div>
         <div class="flex flex-col items-center">
-            <div
-                class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">
-                3</div>
+            <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg">3</div>
             <span class="mt-2 text-green-500 font-semibold text-sm sm:text-base">Medio de pago</span>
         </div>
         <div class="flex-grow border-t-2 border-green-500 mx-4"></div>
         <div class="flex flex-col items-center">
-            <div
-                class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
-                4</div>
+            <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">4</div>
             <span class="mt-2 text-blue-500 font-semibold text-sm sm:text-base">Confirmación</span>
         </div>
     </div>
@@ -38,6 +30,11 @@
         <!-- Resumen de la compra -->
         <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-6 text-gray-800">Confirma tu compra</h2>
+            {% if es_saborlatino %}
+                <div class="bg-green-100 text-green-800 p-3 rounded mb-4 font-bold">
+                    ¡Eres usuario SaborLatino! Se te aplicará un 10% de descuento en tu compra.
+                </div>
+            {% endif %}
             <form method="post">
                 {% csrf_token %}
                 <div class="mb-8">
@@ -99,6 +96,12 @@
                 <span>Cantidad</span>
                 <span>{{ carrito_cantidad }}</span>
             </div>
+            {% if descuento %}
+            <div class="flex justify-between items-center text-lg font-bold text-green-700 mb-2">
+                <span>Descuento SaborLatino</span>
+                <span>- ${{ descuento|floatformat:0 }}</span>
+            </div>
+            {% endif %}
             <div class="flex justify-between items-center text-lg font-bold text-gray-800">
                 <span>Total</span>
                 <span>${{ carrito_total|floatformat:0 }}</span>

@@ -32,20 +32,25 @@ Mi Carrito - SportFit
                     <td class="px-4 py-2 text-right">${{ producto.subtotal|floatformat:0 }}</td>
                     <td class="px-4 py-2 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            <form action="{% url 'disminuir_cantidad_carrito' producto.id_detalle_carrito %}"
-                                method="post" class="inline">
+                            <form action="{% url 'disminuir_cantidad_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
                                 {% csrf_token %}
                                 <button type="submit" title="Disminuir cantidad"
-                                    class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-full w-7 h-7 flex items-center justify-center font-bold transition">
+                                    class="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-yellow-300">
                                     &minus;
                                 </button>
                             </form>
-                            <span class="mx-1 font-medium">{{ producto.cantidad }}</span>
-                            <form action="{% url 'eliminar_del_carrito' producto.id_detalle_carrito %}" method="post"
-                                class="inline">
+                            <span class="mx-2 font-semibold text-gray-800 px-3 py-1 bg-gray-100 rounded">{{ producto.cantidad }}</span>
+                            <form action="{% url 'aumentar_cantidad_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" title="Aumentar cantidad"
+                                    class="bg-green-200 hover:bg-green-300 text-green-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-green-300">
+                                    +
+                                </button>
+                            </form>
+                            <form action="{% url 'eliminar_del_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
                                 {% csrf_token %}
                                 <button type="submit" title="Eliminar producto"
-                                    class="bg-red-100 hover:bg-red-200 text-red-700 rounded-full w-7 h-7 flex items-center justify-center font-bold transition">
+                                    class="bg-red-200 hover:bg-red-300 text-red-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-red-300 ml-2">
                                     &times;
                                 </button>
                             </form>

@@ -45,17 +45,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
-                        <div class="bg-gray-100 rounded-md px-4 py-2">{{ request.user.first_name }}</div>
+                        <div class="bg-gray-100 rounded-md px-4 py-2">{{ usuario.nombre }}</div>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-2">Apellido</label>
-                        <div class="bg-gray-100 rounded-md px-4 py-2">{{ request.user.last_name }}</div>
+                        <div class="bg-gray-100 rounded-md px-4 py-2">{{ usuario.apellido }}</div>
                     </div>
                 </div>
                 <div>
                     <label class="block text-gray-700 text-sm font-semibold mb-2">Rut</label>
                     <div class="bg-gray-100 rounded-md px-4 py-2">
-                    {{ usuario.rut|default_if_none:"-" }}
+                        {{ usuario.rut|default_if_none:"-" }}
                     </div>
                 </div>
                 <div>
@@ -65,7 +65,7 @@
                 <div>
                     <label class="block text-gray-700 text-sm font-semibold mb-2">Teléfono</label>
                     <div class="bg-gray-100 rounded-md px-4 py-2">
-                    {{ usuario.telefono|default_if_none:"-" }}
+                        {{ usuario.telefono|default_if_none:"-" }}
                     </div>
                 </div>
             </div>

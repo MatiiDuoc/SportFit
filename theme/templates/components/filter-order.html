@@ -2,37 +2,34 @@
     <h2 class="text-lg font-bold text-gray-800 mb-4">Filtrar Órdenes</h2>
     <form method="GET" action="" class="flex flex-wrap gap-4">
         <!-- Filtro por cliente -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+        <div>
             <label for="client" class="text-sm font-medium text-gray-700">Cliente:</label>
             <select id="client" name="client" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
                 <option value="">Todos</option>
-                <option value="Juan Pérez">Juan Pérez</option>
-                <option value="Ana López">Ana López</option>
-                <option value="Carlos Gómez">Carlos Gómez</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.nombre }} {{ cliente.apellido }}"
+                        {% if request.GET.client == cliente.nombre|stringformat:"s"|add:" "|add:cliente.apellido|stringformat:"s" %}selected{% endif %}>
+                        {{ cliente.nombre }} {{ cliente.apellido }}
+                    </option>
+                {% endfor %}
             </select>
         </div>
-
         <!-- Filtro por fecha -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+        <div>
             <label for="order_date" class="text-sm font-medium text-gray-700">Fecha:</label>
-            <input type="date" id="order_date" name="order_date" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+            <input type="date" id="order_date" name="order_date" value="{{ request.GET.order_date }}" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
         </div>
-
         <!-- Filtro por estado -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+        <div>
             <label for="status" class="text-sm font-medium text-gray-700">Estado:</label>
             <select id="status" name="status" class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
                 <option value="">Todos</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Completada">Completada</option>
-                <option value="Cancelada">Cancelada</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Enviado">En curso</option>
+                {% for value, label in estados %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
             </select>
         </div>
-
-        <!-- Botón para aplicar filtros -->
-        <div class="flex items-center w-full sm:w-auto">
+        <div>
             <button type="submit"
                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full sm:w-auto">Filtrar</button>
         </div>

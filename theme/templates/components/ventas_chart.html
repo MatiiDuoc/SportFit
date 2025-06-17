@@ -1,46 +1,76 @@
 <div class="w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
     <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Resumen de Ventas del Mes</h1>
-    <div class="relative w-full h-[500px]">
-        <canvas id="ventasChart" class="w-full max-w-full h-96"></canvas>
+    <div class="relative w-full h-[400px] md:h-[500px]">
+        <canvas id="ventasChart" class="w-full h-full"></canvas>
     </div>
-    <div class="mt-6 flex justify-between items-center flex-wrap gap-4">
-        <p class="text-sm text-gray-600">Datos actualizados al <span
-                class="font-semibold text-gray-800">01/01/2023</span></p>
-        <a href="/ventas" class="text-blue-500 hover:underline text-sm font-semibold">Ver más detalles</a>
+    <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-gray-600">Datos actualizados al <span class="font-semibold text-gray-800">{{ fecha_actual }}</span></p>
+        <a href="/admin/ventas" class="text-blue-500 hover:underline text-sm font-semibold">Ver más detalles</a>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('ventasChart').getContext('2d');
-    const ventasChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-            datasets: [{
-                label: 'Ventas ($)',
-                data: [1200, 1900, 3000, 5000],
-                backgroundColor: ['#4fd1c5', '#4299e1', '#f6e05e', '#9f7aea'],
-                borderColor: ['#38b2ac', '#3182ce', '#ecc94b', '#805ad5'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Ventas Semanales'
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('ventasChart').getContext('2d');
+        const ventasChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                datasets: [{
+                    label: 'Ventas',
+                    data: [1200, 1500, 1800, 2000],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(255, 99, 132, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    maxBarThickness: 60
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => '$' + value.toLocaleString()
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 14 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    },
+                    title: {
+                        display: false
+                    }
                 }
             }
-        }
+        });
     });
 </script>

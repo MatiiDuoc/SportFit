@@ -29,9 +29,9 @@ Mis Envíos - SportFit
                     <td class="px-4 py-2">{{ pedido.direccion_entrega }}</td>
                     <td class="px-4 py-2">
                         {% if pedido.tipo_entrega %}
-                            {{ pedido.tipo_entrega|title }}
+                        {{ pedido.tipo_entrega|title }}
                         {% else %}
-                            Retiro en tienda
+                        Retiro en tienda
                         {% endif %}
                     </td>
                     <td class="px-4 py-2">
@@ -46,6 +46,9 @@ Mis Envíos - SportFit
                     <td class="px-4 py-2">
                         <a href="{% url 'detalle_pedido' pedido.id_pedido %}" class="text-blue-600 hover:underline">Ver
                             Detalle</a>
+                    </td>
+                    <td class="px-4 py-2">
+                        <a href="{% url 'seguimiento_pedido' pedido.id_pedido %}" class="text-blue-600 hover:underline">Seguimiento compra</a>
                     </td>
                 </tr>
                 {% endfor %}

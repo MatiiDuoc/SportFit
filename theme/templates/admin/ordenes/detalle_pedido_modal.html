@@ -1,0 +1,22 @@
+<div class="p-4 bg-white rounded shadow">
+    <h2 class="text-xl font-bold mb-4">Detalle del Pedido</h2>
+    <dl class="mb-4">
+        <dt class="font-semibold">Cliente:</dt>
+        <dd class="mb-2">{{ pedido.usuario.nombre }} {{ pedido.usuario.apellido }}</dd>
+        <dt class="font-semibold">Fecha:</dt>
+        <dd class="mb-2">{{ pedido.fecha_creacion|date:"Y-m-d H:i" }}</dd>
+        <dt class="font-semibold">Estado:</dt>
+        <dd class="mb-2">{{ pedido.estado }}</dd>
+    </dl>
+    <div class="mb-4">
+        <p class="font-semibold">Productos:</p>
+        <ul class="list-disc pl-6">
+            {% for detalle in pedido.detallepedido_set.all %}
+            <li>{{ detalle.producto.nombre_producto }} (x{{ detalle.cantidad }})</li>
+            {% empty %}
+            <li class="text-gray-500">No hay productos en este pedido.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <p class="font-semibold text-lg">Total: <span class="text-green-600">${{ pedido.total|floatformat:0 }}</span></p>
+</div>

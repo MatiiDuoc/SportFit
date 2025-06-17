@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Dashboard Entrenador
+{% endblock %}
+
+{% block navbar %}
+<!-- Incluir la sidebar del entrenador -->
+{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    {% include "components/navbar_entrenador.html" %}
+
+    <!-- Contenido principal -->
+    <div id="mainContent" class="flex-grow p-6 bg-gray-100 transition-all duration-300 ease-in-out sm:ml-64">
+        <!-- Encabezado del dashboard -->
+        <h1 class="text-3xl font-bold mb-6">Bienvenido, Entrenador</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span class="text-4xl font-bold text-blue-600">{{ clientes_asignados }}</span>
+                <span class="mt-2 text-gray-700">Clientes asignados</span>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                <span class="text-4xl font-bold text-blue-600">{{ plan_entrenamiento }}</span>
+                <span class="mt-2 text-gray-700">Planes entrenamientos</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<!-- Footer vacío para el entrenador -->
+{% endblock %}

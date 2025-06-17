@@ -2,22 +2,17 @@
     class="fixed top-0 left-0 w-64 bg-gray-900 text-white flex flex-col justify-between p-4 z-40 min-h-screen transition-transform duration-300 ease-in-out -translate-x-full sm:translate-x-0">
     <!-- Sidebar Header -->
     <div>
-        <div class="mb-6">
-            <a href="/" class="flex items-center space-x-2 hover:text-blue-400 transition">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span class="text-sm font-semibold">Volver</span>
-            </a>
-        </div>
         <div class="flex flex-col items-center mb-6">
-            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400">
-            <img src="https://via.placeholder.com/150" alt="Foto de perfil" class="w-full h-full object-cover">
+            <div class="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-user text-3xl text-white"></i>
             </div>
-            <p class="mt-4 text-center font-semibold">
-            Bienvenido, 
+            <p class="text-center font-semibold">
+            Bienvenido,
             <span class="text-blue-400 font-bold">
                 {{ request.user.get_full_name|default:request.user.username }}
             </span>
             </p>
+            <p class="text-xs text-gray-300">{{ request.user.email }}</p>
         </div>
         <!-- Navegación -->
         <nav class="text-sm">

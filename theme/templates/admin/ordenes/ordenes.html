@@ -27,46 +27,166 @@ Gestión de Órdenes
         </div>
         <!-- Tabla de órdenes -->
         <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
-            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
+            <table
+                class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
                 <thead>
-                    <tr class="bg-gray-200 text-gray-700">
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">ID Orden</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cliente</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Productos</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cantidad</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Total</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Fecha</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Estado</th>
+                    <tr class="bg-blue-100 text-blue-900">
+                        <th class="px-3 py-2 font-semibold text-left">ID Orden</th>
+                        <th class="px-3 py-2 font-semibold text-left">Cliente</th>
+                        <th class="px-3 py-2 font-semibold text-left">Total</th>
+                        <th class="px-3 py-2 font-semibold text-left">Fecha</th>
+                        <th class="px-3 py-2 font-semibold text-left">Estado</th>
+                        <th class="px-3 py-2 font-semibold text-left">Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Juan Pérez</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Mancuerna, Esterilla</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">3</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$75.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-01</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Completada</td>
+                    {% for pedido in pedidos|dictsort:"id_pedido" %}
+                    <tr class="border-b hover:bg-blue-50 transition group">
+                        <td class="px-3 py-2 text-gray-800 group-hover:font-semibold">{{ pedido.id_pedido }}</td>
+                        <td class="px-3 py-2 text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-user text-blue-400"></i>
+                            {{ pedido.usuario.nombre }} {{ pedido.usuario.apellido }}
+                        </td>
+                        <td class="px-3 py-2 text-gray-800">
+                            <span class="font-mono bg-blue-50 px-2 py-1 rounded">${{ pedido.total|floatformat:0 }}</span>
+                        </td>
+                        <td class="px-3 py-2 text-gray-800">
+                            <i class="fa-regular fa-calendar text-blue-300 mr-1"></i>
+                            {{ pedido.fecha_creacion|date:"Y-m-d H:i" }}
+                        </td>
+                        <td class="px-3 py-2">
+                            <span class="
+                                    px-2 py-1 rounded-full text-xs font-semibold
+                                    {% if pedido.estado == 'Pendiente' %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% elif pedido.estado == 'Enviado' %}
+                                        bg-blue-100 text-blue-800
+                                    {% elif pedido.estado == 'Entregado' %}
+                                        bg-green-100 text-green-800
+                                    {% elif pedido.estado == 'Cancelado' %}
+                                        bg-red-100 text-red-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-800
+                                    {% endif %}
+                                ">
+                                {{ pedido.estado }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 flex flex-col sm:flex-row gap-2 sm:gap-0 sm:items-center">
+                            <button type="button"
+                                class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded transition font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                onclick="abrirModal('{{ pedido.id_pedido }}', '{{ pedido.estado }}')"
+                                title="Cambiar estado de la orden"
+                            >
+                                <i class="fa-solid fa-arrows-rotate mr-1"></i>
+                                <span class="hidden sm:inline">Cambiar estado</span>
+                            </button>
+                            <button 
+                                type="button"
+                                onclick="verDetallePedido('{{ pedido.id_pedido }}'); return false;"
+                                class="sm:ml-2 flex items-center gap-1 text-blue-600 hover:text-white border border-blue-500 bg-white hover:bg-blue-600 font-semibold px-3 py-1 rounded transition shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                title="Ver detalle de la orden"
+                            >
+                                <i class="fa-solid fa-eye"></i>
+                                <span class="hidden sm:inline">Ver detalle</span>
+                            </button>
+                        </td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Ana López</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Banda Elástica</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$15.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-02</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Pendiente</td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-gray-500">No hay órdenes registradas.</td>
                     </tr>
-                    <!-- Más filas aquí -->
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-
         <!-- Paginador estático -->
         <div class="mt-4 sm:mt-6">
             {% include "components/paginator.html" %}
         </div>
     </div>
 </div>
+<!-- Modal para cambiar estado -->
+<div id="modal-estado"
+    class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-200">
+    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative animate-fade-in">
+        <button type="button" onclick="cerrarModal()"
+            class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 focus:outline-none" aria-label="Cerrar">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <h2 class="text-xl font-semibold mb-6 text-gray-800 text-center">Cambiar estado de la orden</h2>
+        <form id="form-estado" method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="pedido_id" id="modal-pedido-id">
+            <label for="modal-estado-select" class="block text-sm font-medium text-gray-700 mb-1">Nuevo estado</label>
+            <select name="estado" id="modal-estado-select"
+                class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                {% for value, label in estados %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="cerrarModal()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal Detalle Pedido -->
+<div id="modal-detalle-pedido" class="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-200">
+    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg relative animate-fade-in">
+        <button type="button" onclick="cerrarDetalleModal()"
+            class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 focus:outline-none" aria-label="Cerrar">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <h2 class="text-xl font-semibold mb-6 text-gray-800 text-center">Detalle del Pedido</h2>
+        <div id="detalle-pedido-content">
+            <!-- Aquí se cargará el detalle por AJAX -->
+        </div>
+    </div>
+</div>
+<style>
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.25s ease;
+    }
+</style>
+<script>
+    function abrirModal(id, estadoActual) {
+        document.getElementById('modal-estado').classList.remove('hidden');
+        document.getElementById('modal-pedido-id').value = id;
+        // Selecciona el estado actual
+        let select = document.getElementById('modal-estado-select');
+        for (let i = 0; i < select.options.length; i++) {
+            select.options[i].selected = select.options[i].value === estadoActual;
+        }
+    }
+    function cerrarModal() {
+        document.getElementById('modal-estado').classList.add('hidden');
+    }
+    function verDetallePedido(id) {
+    fetch(`/admin/ordenes/detalle/${id}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('detalle-pedido-content').innerHTML = html;
+            document.getElementById('modal-detalle-pedido').classList.remove('hidden');
+        });
+    }
+    function cerrarDetalleModal() {
+        document.getElementById('modal-detalle-pedido').classList.add('hidden');
+    }
+</script>
 {% endblock %}

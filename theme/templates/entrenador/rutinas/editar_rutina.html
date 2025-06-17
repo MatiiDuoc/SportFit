@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Rutina{% endblock %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gray-100 ml-60">
+    {% include "components/navbar_entrenador.html" %}
+    <main class="flex-1 max-w-2xl mx-auto py-10 px-4">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Editar Rutina</h1>
+
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-3 rounded {{ message.tags }} bg-green-100 text-green-800 mb-2">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <section class="bg-white p-6 rounded-lg shadow">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="{{ form.nombre.id_for_label }}" class="block font-medium mb-1">Nombre</label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                    <div class="text-red-600 text-sm">{{ form.nombre.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="{{ form.descripcion.id_for_label }}" class="block font-medium mb-1">Descripción</label>
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}
+                    <div class="text-red-600 text-sm">{{ form.descripcion.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="{{ form.duracion_semana.id_for_label }}" class="block font-medium mb-1">Duración (semanas)</label>
+                    {{ form.duracion_semana }}
+                    {% if form.duracion_semana.errors %}
+                    <div class="text-red-600 text-sm">{{ form.duracion_semana.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="{{ form.nivel.id_for_label }}" class="block font-medium mb-1">Nivel</label>
+                    {{ form.nivel }}
+                    {% if form.nivel.errors %}
+                    <div class="text-red-600 text-sm">{{ form.nivel.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit"
+                    class="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    Guardar cambios
+                </button>
+                <a href="{% url 'rutinas_entrenador' %}" class="ml-4 text-gray-600 hover:underline">Cancelar</a>
+            </form>
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

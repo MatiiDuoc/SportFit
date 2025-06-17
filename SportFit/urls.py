@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework import routers
 from SportFit_app.views import PedidoViewSet
+from django.contrib.auth import views as auth_views
 
 router = routers.DefaultRouter()
 router.register(r'api/pedidos', PedidoViewSet)
@@ -31,9 +32,22 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
-    path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
+    # path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('about/', views.about, name='about'),
+    path('accounts/', include('allauth.urls')),
+    path('recuperar_contrasena/', auth_views.PasswordResetView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena.html'
+    ), name='password_reset'),
+    path('recuperar_contrasena/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_enviado.html'
+    ), name='password_reset_done'),
+    path('recuperar_contrasena/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_confirmar.html'
+    ), name='password_reset_confirm'),
+    path('recuperar_contrasena/completo/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='recuperar_contrasena/recuperar_contrasena_completo.html'
+    ), name='password_reset_complete'),
     #========================
     #CLIENTE
     #========================
@@ -45,7 +59,7 @@ urlpatterns = [
     path('client/checkout/entrega/', views.checkout_entrega, name='checkout_entrega'),
     path('client/checkout/pago/', views.checkout_pago, name='checkout_pago'),
     path('client/checkout/confirmacion/', views.checkout_confirmacion, name='checkout_confirmacion'),
-    path('checkout/exito/', views.compra_exitosa, name='compra_exitosa'),
+    path('checkout/exito/<int:pedido_id>/', views.compra_exitosa, name='compra_exitosa'),
     path('webpay/iniciar/<int:pedido_id>/', views.iniciar_pago_webpay, name='iniciar_pago_webpay'),
     path('webpay/retorno/', views.webpay_retorno, name='webpay_retorno'),
     path('paypal/iniciar/', views.iniciar_pago_paypal, name='iniciar_pago_paypal'),
@@ -56,17 +70,32 @@ urlpatterns = [
     path('carrito/agregar/<int:producto_id>/', views.agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/eliminar/<int:detalle_id>/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
     path('carrito/disminuir/<int:detalle_id>/', views.disminuir_cantidad_carrito, name='disminuir_cantidad_carrito'),
+    path('carrito/aumentar/<int:detalle_id>/', views.aumentar_cantidad_carrito, name='aumentar_cantidad_carrito'),
     path('envios/', views.envios, name='envios'),
     path('direcciones/', views.direcciones, name='direcciones'),
     path('pedidos/', views.pedidos, name='pedidos'),
     path('pedidos/detalle/<int:pedido_id>/', views.detalle_pedido, name='detalle_pedido'),
     path('compras/observacion/<int:compra_id>/', views.agregar_observacion, name='agregar_observacion'),
     path('compras/detalle/<int:compra_id>/', views.detalle_compra, name='detalle_compra'),
+    path('client/', views.contratar_plan, name='mis_planes'),
+    path('producto/<int:producto_id>/comentar/', views.agregar_comentario_producto, name='agregar_comentario_producto'),
+    path('seguimiento/<int:pedido_id>/', views.seguimiento_pedido, name='seguimiento_pedido'),
+    path('completar_perfil/', views.completar_perfil, name='completar_perfil'),
+    #========================   
     #ENTRENADOR
-    #========================
-    #NUTRICIONISTA
-    #========================    
-    #========================
+    #======================== 
+    path('entrenador/', views.dashboard_entrenador, name='dashboard_entrenador'),
+    path('entrenador/perfil/', views.perfil_entrenador, name='perfil_entrenador'), 
+    path('entrenador/perfil/editar/', views.editar_perfil_entrenador, name='editar_perfil_entrenador'),
+    path('entrenador/clientes/', views.clientes_entrenador, name='clientes_entrenador'),
+    path('entrenador/clientes/<int:id>/', views.cliente_detalle_entrenador, name='cliente_detalle_entrenador'),
+    path('entrenador/clientes/editar/<int:id>/', views.editar_cliente_entrenador, name='editar_cliente_entrenador'),
+    path('entrenador/clientes/eliminar/<int:id>/', views.eliminar_cliente_entrenador, name='eliminar_cliente_entrenador'),
+    path('rutinas/', views.rutinas_entrenador, name='rutinas_entrenador'),
+    path('rutinas/crear/', views.crear_rutina, name='crear_rutina'),
+    path('rutinas/<int:id>/', views.rutina_detalle_entrenador, name='rutina_detalle'),
+    path('rutinas/editar/<int:rutina_id>/', views.editar_rutina, name='editar_rutina'),
+    path('rutinas/eliminar/<int:rutina_id>/', views.eliminar_rutina, name='eliminar_rutina'),    #========================
     #ADMINISTRADOR
     #========================
     # usuarios
@@ -89,20 +118,20 @@ urlpatterns = [
     path('admin/productos/crear/', views.crear_producto, name='crear_producto'),
     # marcas
     path('admin/marcas/', views.marcas,  name='marcas'),
-    path('admin/marcas/<int:id>/', views.marca_detalle, name='marca_detalle'),
-    path('admin/marcas/editar/<int:id>/', views.editar_marca, name='editar_marca'),
-    path('admin/marcas/eliminar/<int:id>/', views.eliminar_marca, name='eliminar_marca'),
-    path('admin/marcas/crear/', views.crear_marca, name='crear_marca'),
+    path('admin/marcas/crear/', views.crear_marca_ajax, name='crear_marca_ajax'),
+    path('admin/marcas/editar/<int:id>/', views.editar_marca_ajax, name='editar_marca_ajax'),
+    path('admin/marcas/eliminar/<int:id>/', views.eliminar_marca_ajax, name='eliminar_marca_ajax'),
     # proveedores
     path('admin/proveedores/', views.proveedores, name='proveedores'),
     path('admin/proveedores/<int:id>/', views.proveedor_detalle, name='proveedor_detalle'),
-    path('admin/proveedores/editar/<int:id>/', views.editar_proveedor, name='editar_proveedor'),
-    path('admin/proveedores/eliminar/<int:id>/', views.eliminar_proveedor, name='eliminar_proveedor'),
-    path('admin/proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),
+    path('admin/proveedores/crear/', views.crear_proveedor_ajax, name='crear_proveedor_ajax'),
+    path('admin/proveedores/editar/<int:id>/', views.editar_proveedor_ajax, name='editar_proveedor_ajax'),
+    path('admin/proveedores/eliminar/<int:id>/', views.eliminar_proveedor_ajax, name='eliminar_proveedor_ajax'),
     # ordenes
     path('admin/ordenes/', views.ordenes, name='ordenes'),
     path('admin/ordenes/<int:id>/', views.orden_detalle, name='orden_detalle'),
     path('admin/ordenes/editar/<int:id>/', views.editar_orden, name='editar_orden'),
+    path('admin/ordenes/detalle/<int:pedido_id>/', views.admin_detalle_pedido, name='admin_detalle_pedido'),
     # perfil
     path('admin/perfil/', views.perfil, name='perfil'),
     path('admin/perfil/editar/', views.editar_perfil, name='editar_perfil'),

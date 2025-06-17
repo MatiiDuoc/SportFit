@@ -5,16 +5,19 @@
         <div class="flex flex-wrap items-center space-x-2 w-full sm:w-auto">
             <label for="price_min" class="text-sm font-medium text-gray-700">Precio:</label>
             <input type="number" id="price_min" name="price_min" placeholder="Mín"
-                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20">
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20"
+                value="{{ request.GET.price_min }}">
             <span class="text-gray-500 hidden sm:inline">-</span>
             <input type="number" id="price_max" name="price_max" placeholder="Máx"
-                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20">
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-20"
+                value="{{ request.GET.price_max }}">
         </div>
         <!-- Filtro por fecha -->
         <div class="flex flex-wrap items-center space-x-2 w-full sm:w-auto">
             <label for="sale_date" class="text-sm font-medium text-gray-700">Fecha:</label>
             <input type="date" id="sale_date" name="sale_date"
-                class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto">
+                class="border border-gray-300 rounded-lg p-2 w-full sm:w-auto"
+                value="{{ request.GET.sale_date }}">
         </div>
         <!-- Botón para aplicar filtros -->
         <div class="flex items-center w-full sm:w-auto">

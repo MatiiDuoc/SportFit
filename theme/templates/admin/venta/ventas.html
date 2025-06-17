@@ -24,34 +24,39 @@ Gestión de Ventas
         {% include "components/filters-sale.html" %}
         <!-- Tabla de ventas -->
         <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg shadow-md">
-            <table class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
+            <table
+                class="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm sm:text-base">
                 <thead>
                     <tr class="bg-gray-200 text-gray-700">
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">ID Venta</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cliente</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Productos</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cantidad</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Total</th>
-                        <th scope="col" class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Fecha</th>
+                        <th class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">ID Venta</th>
+                        <th class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Cliente</th>
+                        <th class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Estado</th>
+                        <th class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Total</th>
+                        <th class="px-2 sm:px-4 py-2 text-left font-semibold border-b border-gray-300">Fecha</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for pedido in pedidos %}
                     <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Juan Pérez</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Mancuerna, Esterilla</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">3</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$75.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-01</td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">{{ pedido.id_pedido }}</td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.usuario.nombre }} {{ pedido.usuario.apellido }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.estado }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            ${{ pedido.total|floatformat:0 }}
+                        </td>
+                        <td class="px-2 sm:px-4 py-2 text-gray-800">
+                            {{ pedido.fecha_creacion|date:"Y-m-d H:i" }}
+                        </td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-100 transition">
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Ana López</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">Banda Elástica</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">1</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">$15.000</td>
-                        <td class="px-2 sm:px-4 py-2 text-gray-800">2023-05-02</td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-gray-500">No hay ventas registradas.</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-10">
+    <div class="bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-md p-8">
+        <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Nueva contraseña</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit"
+                class="w-full bg-lime-400 text-black py-2.5 px-4 rounded-md font-semibold hover:bg-lime-500 transition">
+                Cambiar contraseña
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
