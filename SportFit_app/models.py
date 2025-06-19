@@ -335,3 +335,17 @@ class DetallePedido(models.Model):
     class Meta:
         db_table = 'detalle_pedido'
         managed = False  # <--- Agrega esto
+
+class ComentarioPlan(models.Model):
+    id_comentario = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE, db_column='id_usuario')
+    plan = models.ForeignKey('PlanEntrenamiento', on_delete=models.CASCADE, db_column='id_plan')
+    comentario = models.TextField(max_length=500)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'comentario_plan'
+        unique_together = ('usuario', 'plan')  # Un comentario por usuario por plan (opcional)
+
+    def __str__(self):
+        return f"{self.usuario.nombre} sobre {self.plan.nombre}"

@@ -81,6 +81,7 @@ urlpatterns = [
     path('producto/<int:producto_id>/comentar/', views.agregar_comentario_producto, name='agregar_comentario_producto'),
     path('seguimiento/<int:pedido_id>/', views.seguimiento_pedido, name='seguimiento_pedido'),
     path('completar_perfil/', views.completar_perfil, name='completar_perfil'),
+    path('carrito/actualizar/<int:detalle_id>/', views.actualizar_cantidad_carrito, name='actualizar_cantidad_carrito'),
     #========================   
     #ENTRENADOR
     #======================== 
@@ -95,7 +96,10 @@ urlpatterns = [
     path('rutinas/crear/', views.crear_rutina, name='crear_rutina'),
     path('rutinas/<int:id>/', views.rutina_detalle_entrenador, name='rutina_detalle'),
     path('rutinas/editar/<int:rutina_id>/', views.editar_rutina, name='editar_rutina'),
-    path('rutinas/eliminar/<int:rutina_id>/', views.eliminar_rutina, name='eliminar_rutina'),    #========================
+    path('rutinas/eliminar/<int:rutina_id>/', views.eliminar_rutina, name='eliminar_rutina'),    
+    path('alumno/<int:id_usuario>/', views.ver_alumno, name='ver_alumno'),
+    path('alumno/<int:id_usuario>/editar/', views.editar_alumno, name='editar_alumno'),
+    #========================
     #ADMINISTRADOR
     #========================
     # usuarios

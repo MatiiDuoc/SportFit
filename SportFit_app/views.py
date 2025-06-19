@@ -121,6 +121,14 @@ class EditarPerfilClienteForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = ['nombre', 'apellido', 'correo', 'telefono', 'direccion', 'id_comuna', 'id_genero']
+        
+class ComentarioPlanForm(forms.ModelForm):
+    class Meta:
+        model = ComentarioPlan
+        fields = ['comentario']
+        widgets = {
+            'comentario': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Escribe tu reseña...'}),
+        }
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -235,23 +243,18 @@ def carrito(request):
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
         usuario = Usuario.objects.filter(correo=request.user.email).first()
-        if not usuario:
-            messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
-            return redirect('productos_cliente')
-
         producto = get_object_or_404(Producto, pk=producto_id)
-
         carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
         if not carrito:
-            carrito = Carrito.objects.create(
-                id_usuario=usuario,
-                estado='activo'
-            )
+            carrito = Carrito.objects.create(id_usuario=usuario, estado='activo')
 
-        detalle = DetalleCarrito.objects.filter(
-            id_producto=producto,
-            id_carrito=carrito
-        ).first()
+        detalle = DetalleCarrito.objects.filter(id_producto=producto, id_carrito=carrito).first()
+        cantidad_actual = detalle.cantidad if detalle else 0
+        cantidad_nueva = cantidad_actual + 1
+
+        if cantidad_nueva > producto.stock:
+            messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+            return redirect('productos_cliente')
 
         if detalle:
             detalle.cantidad += 1
@@ -288,6 +291,35 @@ def aumentar_cantidad_carrito(request, detalle_id):
     detalle = get_object_or_404(DetalleCarrito, pk=detalle_id)
     detalle.cantidad += 1
     detalle.save()
+    return redirect('carrito')
+
+@login_required
+def actualizar_cantidad_carrito(request, detalle_id):
+    detalle = get_object_or_404(DetalleCarrito, pk=detalle_id)
+    producto = detalle.id_producto
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        cantidad_actual = detalle.cantidad
+        if action == 'incrementar':
+            if cantidad_actual < producto.stock:
+                detalle.cantidad += 1
+                detalle.save()
+            else:
+                messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+        elif action == 'decrementar':
+            if cantidad_actual > 1:
+                detalle.cantidad -= 1
+                detalle.save()
+        elif action == 'actualizar':
+            try:
+                nueva_cantidad = int(request.POST.get('cantidad', 1))
+                if 1 <= nueva_cantidad <= producto.stock:
+                    detalle.cantidad = nueva_cantidad
+                    detalle.save()
+                else:
+                    messages.error(request, f"No hay suficiente stock para {producto.nombre_producto}. Stock disponible: {producto.stock}")
+            except ValueError:
+                messages.error(request, "Cantidad inválida.")
     return redirect('carrito')
 
 @login_required
@@ -913,7 +945,6 @@ def productos_cliente(request):
         'productos': productos_page,
         'marcas': marcas,
     })
-
 @login_required
 def contratar_plan(request):
     usuario = Usuario.objects.filter(correo=request.user.email).first()
@@ -921,14 +952,34 @@ def contratar_plan(request):
         messages.error(request, "Acceso no autorizado.")
         return redirect('home')
 
-    # Validar si ya tiene un plan asignado
     tiene_plan = usuario.id_plan is not None
+    comentario_existente = None
+    comentario_form = None
+
     if tiene_plan:
-        messages.info(request, "Ya tienes un plan de entrenamiento activo.")
+        # Buscar si ya existe un comentario para este usuario y plan
+        comentario_existente = ComentarioPlan.objects.filter(usuario=usuario, plan=usuario.id_plan).first()
+        if request.method == 'POST':
+            # Si ya existe, edítalo; si no, créalo
+            if comentario_existente:
+                comentario_form = ComentarioPlanForm(request.POST, instance=comentario_existente)
+            else:
+                comentario_form = ComentarioPlanForm(request.POST)
+            if comentario_form.is_valid():
+                comentario = comentario_form.save(commit=False)
+                comentario.usuario = usuario
+                comentario.plan = usuario.id_plan
+                comentario.save()
+                messages.success(request, "¡Comentario guardado!")
+                return redirect('mis_planes')
+        else:
+            comentario_form = ComentarioPlanForm(instance=comentario_existente) if comentario_existente else ComentarioPlanForm()
         return render(request, 'client/plan.html', {
             'tiene_plan': True,
             'form': None,
             'usuario_extra': usuario,
+            'comentario_form': comentario_form,
+            'comentario_plan': comentario_existente,
         })
 
     if request.method == 'POST':
@@ -1784,4 +1835,46 @@ def rutina_detalle_entrenador(request, id):
     return render(request, 'entrenador/rutinas/rutina_detalle.html', {
         'rutina': rutina,
     })
+
+def ver_alumno(request, id_usuario):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=id_usuario, id_entrenador=usuario)
+    plan = None
+    if cliente.id_plan and cliente.id_plan.id_entrenador == usuario:
+        plan = cliente.id_plan
+
+    return render(request, 'entrenador/alumnos/ver_alumno.html', {
+        'cliente': cliente,
+        'plan': plan,
+    })
+
+def editar_alumno(request, id_usuario):
+    usuario = Usuario.objects.filter(correo=request.user.email).first()
+    if not usuario or usuario.tipo_usuario != 'entrenador':
+        messages.error(request, "Acceso no autorizado.")
+        return redirect('home')
+
+    cliente = get_object_or_404(Usuario, id_usuario=id_usuario, id_entrenador=usuario)
+    planes = PlanEntrenamiento.objects.filter(id_entrenador=usuario)
+
+    if request.method == 'POST':
+        print("POST:", request.POST)
+        cliente.telefono = request.POST.get('telefono', cliente.telefono)
+        cliente.direccion = request.POST.get('direccion', cliente.direccion)
+        id_plan = request.POST.get('id_plan')
+        print("id_plan recibido:", id_plan)
+        cliente.id_plan_id = int(id_plan) if id_plan else None
+        cliente.save()
+        messages.success(request, "Cliente actualizado correctamente.")
+        return redirect('ver_alumno', id_usuario=cliente.id_usuario)
+
+    return render(request, 'entrenador/alumnos/editar_alumno.html', {
+        'alumno': cliente,
+        'planes': planes,
+    })
+
     

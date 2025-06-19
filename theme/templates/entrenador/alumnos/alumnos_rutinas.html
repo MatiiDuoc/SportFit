@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Mis alumnos{% endblock %}
-{% block navbar %}
-{% endblock %}
+{% block navbar %}{% endblock %}
+
 {% block content %}
 <div class="flex min-h-screen bg-gray-100 ml-60">
     {% include "components/navbar_entrenador.html" %}
@@ -19,19 +19,21 @@
         {% endif %}
 
         <section class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Alumnos asignados</h2>
-            {% if alumnos %}
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Alumnos asignados</h2>
+            </div>
+            {% if clientes %}
             <ul class="divide-y">
-                {% for alumno in alumnos %}
-                <li class="flex items-center justify-between py-3">
+                {% for alumno in clientes %}
+                <li class="flex items-center justify-between py-3 hover:bg-gray-50 transition">
                     <div>
-                        <span class="font-semibold text-gray-800">{{ alumno.nombre }} {{ alumno.apellidos }}</span>
+                        <span class="font-semibold text-gray-800">{{ alumno.nombre }} {{ alumno.apellido }}</span>
                     </div>
-                    <div>
-                        <a href="{% url 'ver_alumno' alumno.id %}" class="text-blue-600 hover:underline mr-2">Ver Detalles</a>
-                        <a href="{% url 'editar_alumno' alumno.id %}" class="text-blue-600 hover:underline mr-2">Editar</a>
-                        <a href="#" class="text-red-600 hover:underline"
-                           onclick="abrirModalEliminar('{{ alumno.id }}', '{{ alumno.nombre }}'); return false;">Eliminar</a>   
+                    <div class="space-x-2">
+                        <a href="{% url 'ver_alumno' alumno.id_usuario %}"
+                            class="text-blue-600 hover:underline">Ver Detalles</a>
+                        <a href="{% url 'editar_alumno' alumno.id_usuario %}"
+                            class="text-yellow-600 hover:underline">Editar</a>
                     </div>
                 </li>
                 {% endfor %}
@@ -39,6 +41,7 @@
             {% else %}
             <p class="text-gray-500">No tienes alumnos asignados aún.</p>
             {% endif %}
+        </section>
     </main>
 </div>
 {% endblock %}

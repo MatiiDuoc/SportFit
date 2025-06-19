@@ -6,8 +6,28 @@ Productos - SportFit
 {% endblock %}
 
 {% block content %}
+<!-- En base.html o productos.html -->
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6 text-center">Nuestros Productos</h1>
+    {% if messages %}
+    <div id="popup-message" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        {% for message in messages %}
+        <div
+            class="flex items-center gap-2 px-6 py-4 rounded-lg bg-red-500 text-white shadow-lg font-semibold animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            <span>{{ message }}</span>
+            <button onclick="document.getElementById('popup-message').style.display='none';"
+                class="ml-4 text-white hover:text-gray-200 text-xl">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+            var popup = document.getElementById('popup-message');
+            if (popup) popup.style.display = 'none';
+        }, 3500);
+    </script>
+    {% endif %}
     <!-- Filtros -->
     {% include "components/filters-product.html" with marcas=marcas %}
     <!-- Cards de productos -->

@@ -8,6 +8,27 @@ Mi Carrito - SportFit
 {% block content %}
 <div class="max-w-3xl mx-auto mt-8">
     <h1 class="text-2xl font-bold mb-6">Mi Carrito</h1>
+
+    {% if messages %}
+    <div id="popup-message" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        {% for message in messages %}
+        <div
+            class="flex items-center gap-2 px-6 py-4 rounded-lg bg-red-500 text-white shadow-lg font-semibold animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            <span>{{ message }}</span>
+            <button onclick="document.getElementById('popup-message').style.display='none';"
+                class="ml-4 text-white hover:text-gray-200 text-xl">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+            var popup = document.getElementById('popup-message');
+            if (popup) popup.style.display = 'none';
+        }, 3500);
+    </script>
+    {% endif %}
+
     {% if carrito_productos %}
     <div class="bg-white rounded-lg shadow p-6">
         <table class="min-w-full text-sm">
@@ -17,6 +38,7 @@ Mi Carrito - SportFit
                     <th class="px-4 py-2 text-center">Cantidad</th>
                     <th class="px-4 py-2 text-right">Precio</th>
                     <th class="px-4 py-2 text-right">Subtotal</th>
+                    <th class="px-4 py-2 text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,36 +47,40 @@ Mi Carrito - SportFit
                     <td class="px-4 py-2 flex items-center gap-3">
                         <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}"
                             class="w-12 h-12 object-cover rounded border">
-                        <span>{{ producto.nombre }}</span>
+                        <span>{{ producto.id_producto.nombre_producto }}</span>
                     </td>
-                    <td class="px-4 py-2 text-center">{{ producto.cantidad }}</td>
+                    <td class="px-4 py-2 text-center">
+                        <form action="{% url 'actualizar_cantidad_carrito' producto.id_detalle_carrito %}" method="post"
+                            class="flex items-center justify-center gap-2">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="decrementar"
+                                class="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-yellow-300"
+                                {% if producto.es_minimo %}disabled{% endif %}>
+                                &minus;
+                            </button>
+                            <input type="number" name="cantidad" min="1" max="{{ producto.id_producto.stock }}"
+                                value="{{ producto.cantidad }}" class="w-16 text-center border rounded"
+                                style="appearance: textfield;" required>
+                            <button type="submit" name="action" value="incrementar"
+                                class="bg-green-200 hover:bg-green-300 text-green-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-green-300"
+                                {% if producto.es_maximo %}disabled{% endif %}>
+                                +
+                            </button>
+                            <button type="submit" name="action" value="actualizar"
+                                class="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">Actualizar</button>
+                        </form>
+                    </td>
                     <td class="px-4 py-2 text-right">${{ producto.precio|floatformat:0 }}</td>
                     <td class="px-4 py-2 text-right">${{ producto.subtotal|floatformat:0 }}</td>
                     <td class="px-4 py-2 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <form action="{% url 'disminuir_cantidad_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" title="Disminuir cantidad"
-                                    class="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-yellow-300">
-                                    &minus;
-                                </button>
-                            </form>
-                            <span class="mx-2 font-semibold text-gray-800 px-3 py-1 bg-gray-100 rounded">{{ producto.cantidad }}</span>
-                            <form action="{% url 'aumentar_cantidad_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" title="Aumentar cantidad"
-                                    class="bg-green-200 hover:bg-green-300 text-green-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-green-300">
-                                    +
-                                </button>
-                            </form>
-                            <form action="{% url 'eliminar_del_carrito' producto.id_detalle_carrito %}" method="post" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" title="Eliminar producto"
-                                    class="bg-red-200 hover:bg-red-300 text-red-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-red-300 ml-2">
-                                    &times;
-                                </button>
-                            </form>
-                        </div>
+                        <form action="{% url 'eliminar_del_carrito' producto.id_detalle_carrito %}" method="post"
+                            class="inline">
+                            {% csrf_token %}
+                            <button type="submit" title="Eliminar producto"
+                                class="bg-red-200 hover:bg-red-300 text-red-800 rounded-full w-8 h-8 flex items-center justify-center font-bold shadow transition duration-150 border border-red-300 ml-2">
+                                &times;
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
