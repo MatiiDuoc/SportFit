@@ -1043,18 +1043,42 @@ def dashboard_administrador(request):
 # -------------------- reportes --------------------
 @login_required
 def reportes(request):
-    # Obtener todas las ventas
-    ventas = Venta.objects.all()
-    # Sumar el total de ventas
-    total_ventas = ventas.aggregate(total=Sum('monto_total'))['total'] or 0
-    # Sumar la cantidad de productos vendidos
-    total_productos = sum(
-        sum(detalle.cantidad for detalle in venta.carrito.detallecarrito_set.all())
-        for venta in ventas
-    )
-    # Pasar los resultados al contexto
+    ventas = Venta.objects.select_related('id_carrito', 'id_carrito__id_usuario').all()
+    ventas_detalladas = []
+    total_ventas = 0
+    total_productos = 0
+
+    for venta in ventas:
+        # Busca el pedido asociado a la venta
+        pedido = Pedido.objects.filter(carrito=venta.id_carrito).first()
+        if not pedido:
+            continue
+        detalles = DetallePedido.objects.filter(pedido=pedido).select_related('producto')
+        productos = []
+        cantidad_total_venta = 0
+        for detalle in detalles:
+            productos.append({
+                'nombre': detalle.producto.nombre_producto,
+                'cantidad': detalle.cantidad,
+                'precio': detalle.precio,
+                'subtotal': detalle.cantidad * detalle.precio,
+            })
+            cantidad_total_venta += detalle.cantidad
+        ventas_detalladas.append({
+            'id': venta.id_venta,
+            'fecha': venta.fecha,
+            'cliente': venta.id_carrito.id_usuario,
+            'productos': productos,
+            'cantidad_total': cantidad_total_venta,
+            'monto_total': venta.monto_total,
+            'metodo_pago': pedido.metodo_pago if pedido else '',
+            'estado': venta.estado,
+        })
+        total_ventas += venta.monto_total or 0
+        total_productos += cantidad_total_venta
+
     context = {
-        'ventas': ventas,  # <-- para mostrar en la tabla
+        'ventas_detalladas': ventas_detalladas,
         'total_ventas': total_ventas,
         'total_productos': total_productos,
     }
