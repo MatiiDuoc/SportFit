@@ -157,7 +157,15 @@ WEBPAY_ENVIRONMENT = os.getenv('WEBPAY_ENVIRONMENT', 'X')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+        'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10/minute',   # 10 requests por minuto por usuario autenticado
+        'anon': '5/minute',    # 5 requests por minuto por usuario anónimo
+    }
 }
 
 # Password validation

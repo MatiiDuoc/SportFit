@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}
 Gestión de productos
 {% endblock %}
@@ -76,8 +76,13 @@ Gestión de productos
                         <td class="px-2 sm:px-4 py-2 text-gray-800 align-middle">{{ producto.id_marca.descripcion }}
                         </td>
                         <td class="px-2 sm:px-4 py-2 align-middle">
-                            <img src="{{ producto.imagen.url }}" alt="Producto"
-                                class="w-10 h-10 object-cover rounded shadow border border-gray-200 mx-auto">
+                            {% if producto.imagen %}
+                                <img src="{{ producto.imagen.url }}" alt="Producto"
+                                    class="w-10 h-10 object-cover rounded shadow border border-gray-200 mx-auto">
+                            {% else %}
+                                <img src="{% static 'images/no_image/no_image.jpg' %}" alt="Sin imagen"
+                                    class="w-10 h-10 object-cover rounded shadow border border-gray-200 mx-auto">
+                            {% endif %}
                         </td>
                         <td class="px-2 sm:px-4 py-2 flex flex-wrap justify-center gap-1 sm:gap-2">
                             <a href="{% url 'producto_detalle' producto.id_producto %}"

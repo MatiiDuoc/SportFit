@@ -1,0 +1,71 @@
+----------------------------------------------
+1. Autenticación y Usuarios
+----------------------------------------------
+Login exitoso (usuario válido) ✅
+Login fallido (usuario inválido) ✅
+Registro de usuario nuevo (cliente) ✅
+Registro con correo ya existente ✅
+Registro con RUT ya existente ✅
+Recuperación de contraseña (correo válido) ✅
+Acceso a endpoints protegidos sin token/sesión ✅
+Acceso a endpoints protegidos con token/sesión inválida ✅
+-----------------------
+2. Perfil y Seguridad
+-----------------------
+Completar perfil (datos válidos) ✅
+Completar perfil (datos inválidos) ✅
+Editar perfil (cambio de datos) ✅
+Editar perfil con datos inválidos ✅
+-----------------------
+3. Carrito de Compras
+-----------------------
+Agregar producto al carrito (stock suficiente) ✅
+Agregar producto al carrito (stock insuficiente) ✅
+Agregar producto repetido (incrementa cantidad) ✅
+Eliminar producto del carrito ✅
+Ver carrito con productos ✅
+-----------------------
+4. Productos y Catálogo
+-----------------------
+Listar productos (sin filtros) cliente ✅
+Listar productos (sin filtros) admin ✅
+Crear producto (admin) datos validos
+Crear producto (admin) datos invalidos
+Editar producto (admin) ✅
+Eliminar producto (admin) ✅
+Crear producto con datos inválidos ✅
+-----------------------
+5. Órdenes y Compras
+-----------------------
+Realizar compra completa (flujo normal) ✅
+Realizar compra sin completar perfil ✅
+Ver historial de compras (cliente) ✅
+Ver detalle de compra (cliente) ✅
+Cambiar estado de pedido (admin) ✅
+Ver pedidos pendientes, entregados, cancelados ✅
+-----------------------
+6. Planes y Rutinas
+-----------------------
+Contratar plan (cliente) ✅
+Ver plan contratado (cliente) ✅
+Dejar comentario/reseña de plan ✅
+Ver comentarios de planes (admin/entrenador) ✅
+Editar rutina de cliente (entrenador) ✅
+----------------------------------------------
+7. Seguridad y Acceso
+----------------------------------------------
+Acceso a endpoints de admin de usuarios ✅
+Acceso a endpoints de entrenador ✅
+Prueba de inyección SQL en campos de texto ✅
+Prueba de XSS en comentarios/productos ✅
+Prueba de CSRF (si aplica) ✅
+Prueba de rate limiting (muchos requests seguidos) ✅
+----------------------------------------------
+8. Reportes y Exportaciones
+----------------------------------------------
+Generar reporte de ventas (admin) ✅
+----------------------------------------------
+9. Rendimiento (con Newman o scripts)
+----------------------------------------------
+Simular 10, 50, 100 usuarios agregando productos al carrito ✅
+Medir tiempo de respuesta de endpoints críticos ✅
