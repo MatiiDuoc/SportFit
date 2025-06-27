@@ -777,7 +777,7 @@ def detalle_pedido(request, pedido_id):
     return render(request, 'client/detalle_pedido.html', {'pedido': pedido})
 
 def paypal_cancelado(request):
-    return render(request, 'paypal/cancelado.html')
+    return render(request, 'client/paypal/cancelado.html')
 
 @login_required
 def compra_exitosa(request, pedido_id):
