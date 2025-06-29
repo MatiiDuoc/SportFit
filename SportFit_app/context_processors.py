@@ -13,13 +13,18 @@ def carrito_context(request):
                 for detalle in detalles:
                     producto = detalle.id_producto
                     img = producto.imagen
-                    if hasattr(img, 'url'):
-                        img_url = img.url
+                    # Cambiar esta validación
+                    if img and hasattr(img, 'url'):
+                        try:
+                            img_url = img.url
+                        except ValueError:
+                            img_url = ''
                     else:
-                        img_url = img if img else ''
+                        img_url = ''
+                    
                     subtotal = detalle.precio * detalle.cantidad
                     productos.append({
-                        'id_detalle_carrito': detalle.id_detalle_carrito,  # <-- agrega esta línea
+                        'id_detalle_carrito': detalle.id_detalle_carrito,
                         'nombre': producto.nombre_producto,
                         'imagen': img_url,
                         'cantidad': detalle.cantidad,

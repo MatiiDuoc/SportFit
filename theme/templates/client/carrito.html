@@ -45,9 +45,9 @@ Mi Carrito - SportFit
                 {% for producto in carrito_productos %}
                 <tr class="border-b">
                     <td class="px-4 py-2 flex items-center gap-3">
-                        <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}"
-                            class="w-12 h-12 object-cover rounded border">
-                        <span>{{ producto.id_producto.nombre_producto }}</span>
+                        <img src="{% if producto.imagen %}{{ producto.imagen }}{% else %}{% static 'images/no_image/no_image.jpg' %}{% endif %}"
+                            alt="{{ producto.nombre }}" class="w-12 h-12 object-cover rounded">
+                        <span>{{ producto.nombre }}</span>
                     </td>
                     <td class="px-4 py-2 text-center">
                         <form action="{% url 'actualizar_cantidad_carrito' producto.id_detalle_carrito %}" method="post"

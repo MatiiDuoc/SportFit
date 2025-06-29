@@ -86,7 +86,9 @@
             <div class="border-b border-gray-200 pb-4 mb-4">
                 {% for producto in carrito_productos %}
                 <div class="flex items-center mb-2">
-                    <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}" class="w-16 h-16 rounded-md mr-4">
+                    {% load static %}
+                    <img src="{% if producto.imagen %}{{ producto.imagen }}{% else %}{% static 'images/no_image/no_image.jpg' %}{% endif %}"
+                        alt="{{ producto.nombre }}" class="w-16 h-16 object-cover rounded-md mr-4">
                     <div class="flex-grow">
                         <p class="text-gray-700 font-medium">{{ producto.nombre }}</p>
                         <p class="text-gray-500 text-sm">Cantidad: {{ producto.cantidad }}</p>

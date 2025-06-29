@@ -220,10 +220,15 @@ def carrito(request):
         for detalle in detalles:
             producto = detalle.id_producto
             img = producto.imagen
-            if hasattr(img, 'url'):
-                img_url = img.url
+            # Cambiar esta validación - igual que en el context_processor
+            if img and hasattr(img, 'url'):
+                try:
+                    img_url = img.url
+                except ValueError:
+                    img_url = ''
             else:
-                img_url = img if img else ''
+                img_url = ''
+            
             productos.append({
                 'id_detalle_carrito': detalle.id_detalle_carrito,
                 'nombre': producto.nombre_producto,
@@ -340,6 +345,38 @@ def checkout_usuario(request):
     if not usuario or not usuario.rut or not usuario.nombre or not usuario.apellido or not usuario.telefono or not usuario.direccion:
         messages.info(request, "Debes completar tu perfil antes de comprar.")
         return redirect('completar_perfil')
+    
+    # Agregar datos del carrito
+    carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
+    carrito_productos = []
+    carrito_cantidad = 0
+    carrito_total = 0
+    
+    if carrito:
+        detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
+        for detalle in detalles:
+            producto = detalle.id_producto
+            img = producto.imagen
+            # Validación de imagen
+            if img and hasattr(img, 'url'):
+                try:
+                    img_url = img.url
+                except ValueError:
+                    img_url = ''
+            else:
+                img_url = ''
+            
+            subtotal = detalle.precio * detalle.cantidad
+            carrito_productos.append({
+                'nombre': producto.nombre_producto,
+                'imagen': img_url,
+                'cantidad': detalle.cantidad,
+                'precio': detalle.precio,
+                'subtotal': subtotal,
+            })
+            carrito_cantidad += detalle.cantidad
+            carrito_total += subtotal
+    
     if request.method == 'POST':
         request.session['checkout_usuario'] = {
             'rut': request.POST['rut'],
@@ -348,8 +385,12 @@ def checkout_usuario(request):
             'telefono': request.POST['telefono'],
         }
         return redirect('checkout_entrega')
+    
     return render(request, 'client/checkout/usuario.html', {
         'usuario': usuario,
+        'carrito_productos': carrito_productos,
+        'carrito_cantidad': carrito_cantidad,
+        'carrito_total': carrito_total,
     })
     
 @login_required
@@ -358,16 +399,50 @@ def checkout_entrega(request):
     if not usuario:
         messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
         return redirect('home')
+    
+    # Agregar datos del carrito (misma lógica que arriba)
+    carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
+    carrito_productos = []
+    carrito_cantidad = 0
+    carrito_total = 0
+    
+    if carrito:
+        detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
+        for detalle in detalles:
+            producto = detalle.id_producto
+            img = producto.imagen
+            if img and hasattr(img, 'url'):
+                try:
+                    img_url = img.url
+                except ValueError:
+                    img_url = ''
+            else:
+                img_url = ''
+            
+            subtotal = detalle.precio * detalle.cantidad
+            carrito_productos.append({
+                'nombre': producto.nombre_producto,
+                'imagen': img_url,
+                'cantidad': detalle.cantidad,
+                'precio': detalle.precio,
+                'subtotal': subtotal,
+            })
+            carrito_cantidad += detalle.cantidad
+            carrito_total += subtotal
+    
     if request.method == 'POST':
         request.session['checkout_entrega'] = {
             'tipo_entrega': request.POST['tipo_entrega'],
             'direccion_entrega': request.POST.get('direccion_entrega', ''),
         }
         return redirect('checkout_pago')
+    
     return render(request, 'client/checkout/entrega.html', {
         'usuario': usuario,
+        'carrito_productos': carrito_productos,
+        'carrito_cantidad': carrito_cantidad,
+        'carrito_total': carrito_total,
     })
-
 
 @login_required
 def checkout_pago(request):
@@ -375,14 +450,50 @@ def checkout_pago(request):
     if not usuario:
         messages.error(request, "Tu cuenta no está completamente registrada. Contacta al administrador.")
         return redirect('home')
+    
+    # Agregar datos del carrito (misma lógica que en checkout_usuario y checkout_entrega)
+    carrito = Carrito.objects.filter(id_usuario=usuario, estado='activo').first()
+    carrito_productos = []
+    carrito_cantidad = 0
+    carrito_total = 0
+    
+    if carrito:
+        detalles = DetalleCarrito.objects.filter(id_carrito=carrito)
+        for detalle in detalles:
+            producto = detalle.id_producto
+            img = producto.imagen
+            # Validación de imagen
+            if img and hasattr(img, 'url'):
+                try:
+                    img_url = img.url
+                except ValueError:
+                    img_url = ''
+            else:
+                img_url = ''
+            
+            subtotal = detalle.precio * detalle.cantidad
+            carrito_productos.append({
+                'nombre': producto.nombre_producto,
+                'imagen': img_url,
+                'cantidad': detalle.cantidad,
+                'precio': detalle.precio,
+                'subtotal': subtotal,
+            })
+            carrito_cantidad += detalle.cantidad
+            carrito_total += subtotal
+    
     if request.method == 'POST':
         request.session['checkout_pago'] = {
             'metodo_pago': request.POST['metodo_pago'],
             'detalles_pago': request.POST.get('detalles_pago', ''),
         }
         return redirect('checkout_confirmacion')
+    
     return render(request, 'client/checkout/pago.html', {
         'usuario': usuario,
+        'carrito_productos': carrito_productos,
+        'carrito_cantidad': carrito_cantidad,
+        'carrito_total': carrito_total,
     })
     
 @login_required
@@ -405,7 +516,15 @@ def checkout_confirmacion(request):
     for detalle in detalles:
         producto = detalle.id_producto
         img = producto.imagen
-        img_url = img.url if hasattr(img, 'url') else (img if img else '')
+        # Validación de imagen - igual que en las otras vistas
+        if img and hasattr(img, 'url'):
+            try:
+                img_url = img.url
+            except ValueError:
+                img_url = ''
+        else:
+            img_url = ''
+        
         subtotal = detalle.precio * detalle.cantidad
         carrito_productos.append({
             'nombre': producto.nombre_producto,
@@ -503,6 +622,7 @@ def checkout_confirmacion(request):
         'descuento': descuento,
         'es_saborlatino': es_usuario_saborlatino_flag,
     })
+
 # -------------------- Webpay --------------------
 def iniciar_pago_webpay(request, pedido_id):
     print("===> Entrando a iniciar_pago_webpay")
